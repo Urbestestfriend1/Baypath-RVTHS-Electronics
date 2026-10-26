@@ -34,7 +34,7 @@ Open `data/site-config.js` and edit:
 - `heroTitleTop`, `heroTitleAccent`, and `intro`: homepage text.
 - `homeCards`: homepage shortcuts, with an image and route per card.
 
-To use your own photo, upload it into `assets/images/` and point `heroImage` to it. A wide landscape image (roughly 1800 × 600 px or similar) works well. The banner is full-bleed across the top; the text is a separate HTML overlay, so changing the photo does not mean editing the design.
+Current banner photo: [Interior of a workshop with tools and equipment on Unsplash](https://unsplash.com/photos/interior-of-a-workshop-with-tools-and-equipment-Nh8G2yV2DYw) by Haberdoedas, under the Unsplash License. You can change `heroImage` to another HTTPS image URL, or upload your own photo into `assets/images/` and point `heroImage` to the local file. A wide landscape image (roughly 1800 × 600 px or similar) works well. The banner is full-bleed across the top; the text is a separate HTML overlay, so changing the photo does not mean editing the design.
 
 ## Replace an image
 
