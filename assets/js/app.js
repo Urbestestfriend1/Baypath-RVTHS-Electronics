@@ -456,20 +456,27 @@
       '<div class="page-content">' + content + empty + '</div></div>';
   }
 
+  function setSidebarOpen(open) {
+    if (sidebar) sidebar.classList.toggle("is-open", open);
+    if (sidebarBackdrop) sidebarBackdrop.hidden = !open;
+    document.body.classList.toggle("sidebar-open", open);
+    if (menuButton) menuButton.setAttribute("aria-expanded", String(open));
+  }
+
   function render() {
     const path = pathNow();
     const project = projectFor(path);
     renderTop(path);
     renderContext(path, project);
-    const output = path === "/" ? renderHome() : project ? renderProjectDetail(project, path) : renderPage(path);
+    const output = path === "/" ? renderHome() : path === "/inventory" ? renderInventory(path) : project ? renderProjectDetail(project, path) : renderPage(path);
     app.innerHTML = '<div class="route-view">' + output + '</div>';
     app.classList.remove("is-entering");
     void app.offsetWidth;
     app.classList.add("is-entering");
+    if (path === "/inventory") updateInventoryResults();
     const page = pages[path];
     document.title = (project ? project.title : page ? page.title : path === "/" ? "Home" : "Shop Class") + " — " + (cfg.brand || "Shop Class");
-    topNav.classList.remove("open");
-    menuButton.setAttribute("aria-expanded", "false");
+    setSidebarOpen(false);
   }
 
   function searchPages(query) {
@@ -485,7 +492,11 @@
     });
     const projectResults = projects.filter(project => (project.title + " " + project.slug + " " + project.grade + " " + project.category + " " + project.summary + " " + project.description).toLowerCase().includes(q))
       .map(project => ({path:projectPath(project),title:project.title,description:project.summary || project.description || "Project page"}));
-    const matches = navResults.concat(projectResults).filter((item,index,list) => list.findIndex(other => other.path === item.path) === index).slice(0,7);
+    const inventoryResults = inventory.filter(item => {
+      const loc = item.location || {};
+      return [item.id,item.partNumber,item.name,item.manufacturer,item.category,item.description,inventoryLocation(item),loc.area,loc.cabinet,loc.shelf,loc.bin,item.notes,item.supplier].join(" ").toLowerCase().includes(q);
+    }).slice(0,4).map(item => ({path:"/inventory",title:"Inventory · " + (item.name || item.partNumber),description:(item.partNumber || item.id) + " · " + inventoryArea(item) + " · " + inventoryStock(item).label}));
+    const matches = navResults.concat(projectResults,inventoryResults).filter((item,index,list) => list.findIndex(other => other.path === item.path && other.title === item.title) === index).slice(0,8);
     results.innerHTML = '<div class="search-results-heading">Search results</div>' + (matches.length
       ? matches.map(item => '<a href="' + href(item.path) + '"><strong>' + esc(item.title) + '</strong><small>' + esc(item.description) + '</small></a>').join("")
       : '<div class="search-empty">No results. Try “schematics”, “projects”, or “safety”.</div>');
@@ -512,11 +523,61 @@
   });
 
   menuButton.addEventListener("click", () => {
-    const open = topNav.classList.toggle("open");
-    menuButton.setAttribute("aria-expanded", String(open));
+    setSidebarOpen(!sidebar.classList.contains("is-open"));
   });
+  if (sidebarClose) sidebarClose.addEventListener("click", () => setSidebarOpen(false));
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", () => setSidebarOpen(false));
   topNav.addEventListener("click", event => {
-    if (event.target.closest("a")) { topNav.classList.remove("open"); menuButton.setAttribute("aria-expanded", "false"); }
+    if (event.target.closest("a")) setSidebarOpen(false);
+  });
+  app.addEventListener("click", event => {
+    const jump = event.target.closest('a[href^="#"]');
+    if (!jump) return;
+    const destination = jump.getAttribute("href");
+    if (!destination || destination.startsWith("#/")) return;
+    const target = document.getElementById(destination.slice(1));
+    if (!target) return;
+    event.preventDefault();
+    const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({behavior:reduced ? "auto" : "smooth",block:"start"});
+  });
+  document.addEventListener("input", event => {
+    if (event.target.id === "inventory-search") {
+      inventoryState.query = event.target.value;
+      inventoryState.page = 1;
+      updateInventoryResults();
+    }
+  });
+  document.addEventListener("change", event => {
+    const id = event.target.id;
+    if (id === "inventory-category") inventoryState.category = event.target.value;
+    else if (id === "inventory-area") inventoryState.area = event.target.value;
+    else if (id === "inventory-stock") inventoryState.stock = event.target.value;
+    else if (id === "inventory-page-size") inventoryState.pageSize = Number(event.target.value);
+    else return;
+    inventoryState.page = 1;
+    updateInventoryResults();
+  });
+  document.addEventListener("click", event => {
+    const sort = event.target.closest("[data-inventory-sort]");
+    if (sort) {
+      const key = sort.getAttribute("data-inventory-sort");
+      if (inventoryState.sortBy === key) inventoryState.sortDir = inventoryState.sortDir === "asc" ? "desc" : "asc";
+      else { inventoryState.sortBy = key; inventoryState.sortDir = "asc"; }
+      updateInventoryResults(); return;
+    }
+    if (event.target.closest("[data-inventory-prev]")) { inventoryState.page = Math.max(1,inventoryState.page-1); updateInventoryResults(); return; }
+    if (event.target.closest("[data-inventory-next]")) { inventoryState.page += 1; updateInventoryResults(); return; }
+    if (event.target.closest("[data-inventory-reset]")) {
+      inventoryState.query = ""; inventoryState.category = "all"; inventoryState.area = "all"; inventoryState.stock = "all";
+      inventoryState.sortBy = "name"; inventoryState.sortDir = "asc"; inventoryState.page = 1; inventoryState.pageSize = 50;
+      const q = document.getElementById("inventory-search"); if (q) q.value = "";
+      const category = document.getElementById("inventory-category"); if (category) category.value = "all";
+      const area = document.getElementById("inventory-area"); if (area) area.value = "all";
+      const stock = document.getElementById("inventory-stock"); if (stock) stock.value = "all";
+      updateInventoryResults(); return;
+    }
+    if (event.target.closest("[data-inventory-export]")) inventoryExportCSV(inventoryMatches());
   });
   search.addEventListener("input", () => searchPages(search.value));
   search.addEventListener("focus", () => { if (search.value.trim()) searchPages(search.value); });
