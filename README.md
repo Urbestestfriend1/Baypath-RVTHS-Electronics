@@ -1,4 +1,4 @@
-# Baypath RVTHS Shop Class Hub
+# Baypath RVTHS Electronics Hub
 
 A modular static website for Baypath RVTHS. GitHub Pages serves the site directly; no build step or package manager is required.
 
