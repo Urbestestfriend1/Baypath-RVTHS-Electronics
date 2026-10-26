@@ -76,6 +76,7 @@
     }
 
     const items = root.children || [];
+    if (!items.length) { contextNav.hidden = true; contextNav.innerHTML = ""; return; }
     let markup = '<div class="context-inner"><span class="context-label">' + esc(root.label) + '</span><a href="' + href(root.path) + '"' +
       (path === root.path ? ' aria-current="page"' : "") + '>Overview</a>';
     markup += items.map(item => '<a href="' + href(item.path) + '"' + (isActive(path, item.path) ? ' aria-current="page"' : "") + '>' + esc(item.label) + '</a>').join("");
@@ -172,14 +173,16 @@
       '<aside class="home-rail"><section class="rail-panel"><div class="rail-heading"><span>QUICK LINKS</span><b>⌁</b></div>' + quickLinks + '</section>' +
       '<section class="rail-panel"><div class="rail-heading"><span>SCHEMATICS BY GRADE</span><b>＋</b></div>' +
       grades.map((grade, index) => '<a class="grade-link" href="' + href(grade.path) + '"><span class="grade-number">0' + (index + 1) + '</span><span>' + esc(grade.label) + '</span><b>→</b></a>').join("") +
-      '</section><div class="rail-note"><span class="note-mark">i</span><p>Need to update a section? Start in <code>data/</code>. The editing guide explains what to change.</p><a href="EDITING-GUIDE.md" target="_blank" rel="noopener">Open editing guide ↗</a></div></aside></div>';
+      '</section><div class="rail-note"><span class="note-mark">i</span><p>Need to update a section? Start in <code>data/</code>. The editing guide explains what to change.</p><a href="https://github.com/Urbestestfriend1/Baypath-RVTHS-Electronics/blob/main/EDITING-GUIDE.md" target="_blank" rel="noopener">Open editing guide ↗</a></div></aside></div>';
   }
 
   function renderProjectGallery(path) {
+    const realCount = projects.filter(p => !p.template).length;
     const ready = projects.length ? '<div class="project-grid">' + projects.map(projectCard).join("") + '</div>' :
       '<div class="empty-projects"><div><strong>No projects have been added yet.</strong><p>Copy the example object in <code>data/projects.js</code>, then replace its title, images, and details.</p></div></div>';
+    const countText = realCount === 0 ? "STARTER TEMPLATE BELOW" : realCount + (realCount === 1 ? " PROJECT" : " PROJECTS");
     return '<div class="page-shell">' + breadcrumbs(path) +
-      '<header class="page-intro"><div><p class="eyebrow">PROJECT LIBRARY</p><h1>Projects</h1><p>Each project uses the same page layout, so every build is documented in a familiar way.</p></div><span class="count-label">' + projects.filter(p => !p.template).length + ' projects</span></header>' +
+      '<header class="page-intro"><div><p class="eyebrow">PROJECT LIBRARY</p><h1>Projects</h1><p>Each project uses the same page layout, so every build is documented in a familiar way.</p></div><span class="count-label">' + countText + '</span></header>' +
       ready + callout({title:"Add a project",text:"Open data/projects.js, copy the sample project object, and change its slug, description, pictures, schematic, parts, tools, and steps. No layout code needs to be changed."}) + '</div>';
   }
 
