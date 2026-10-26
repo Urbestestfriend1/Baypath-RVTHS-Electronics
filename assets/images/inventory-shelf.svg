@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" fill="none">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#241735"/><stop offset="1" stop-color="#100c1b"/></linearGradient>
+ <linearGradient id="bin" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#3d2b55"/><stop offset="1" stop-color="#21152f"/></linearGradient>
+ <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" stroke="#a987d7" stroke-opacity=".08"/></pattern>
+</defs>
+<rect width="760" height="430" rx="18" fill="url(#bg)"/><rect width="760" height="430" rx="18" fill="url(#grid)"/>
+<path d="M54 67H706M54 347H706" stroke="#a987d7" stroke-opacity=".35"/>
+<text x="56" y="44" fill="#c9a8ff" font-family="monospace" font-size="12" letter-spacing="2">STOCKROOM / COMPONENT INDEX</text>
+<g transform="translate(72 97)">
+ <rect width="616" height="220" rx="10" fill="#171020" stroke="#5b4275" stroke-width="2"/>
+ <path d="M0 69H616M0 145H616M154 0V220M308 0V220M462 0V220" stroke="#684b87" stroke-width="2"/>
+ <g fill="url(#bin)" stroke="#7b5a9d" stroke-width="1.5">
+  <rect x="13" y="12" width="128" height="45" rx="5"/><rect x="167" y="12" width="128" height="45" rx="5"/><rect x="321" y="12" width="128" height="45" rx="5"/><rect x="475" y="12" width="128" height="45" rx="5"/>
+  <rect x="13" y="81" width="128" height="51" rx="5"/><rect x="167" y="81" width="128" height="51" rx="5"/><rect x="321" y="81" width="128" height="51" rx="5"/><rect x="475" y="81" width="128" height="51" rx="5"/>
+  <rect x="13" y="157" width="128" height="51" rx="5"/><rect x="167" y="157" width="128" height="51" rx="5"/><rect x="321" y="157" width="128" height="51" rx="5"/><rect x="475" y="157" width="128" height="51" rx="5"/>
+ </g>
+ <g fill="#c9a8ff"><circle cx="30" cy="25" r="4"/><circle cx="184" cy="25" r="4"/><circle cx="338" cy="25" r="4"/><circle cx="492" cy="25" r="4"/></g>
+ <g fill="#e9dfff" font-family="monospace" font-size="10" letter-spacing="1">
+  <text x="42" y="41">R-01</text><text x="196" y="41">C-02</text><text x="350" y="41">IC-03</text><text x="504" y="41">LED-04</text>
+  <text x="42" y="105">DRAWER A1</text><text x="196" y="105">DRAWER B2</text><text x="350" y="105">DRAWER C3</text><text x="504" y="105">BIN D4</text>
+  <text x="42" y="181">CABLES</text><text x="196" y="181">TOOLS</text><text x="350" y="181">TEST GEAR</text><text x="504" y="181">SPARES</text>
+ </g>
+ <g stroke="#ba96f0" stroke-width="2" stroke-linecap="round">
+  <path d="M31 119h90M185 119h90M339 119h90M493 119h90"/>
+  <path d="M31 194h90M185 194h90M339 194h90M493 194h90" stroke-opacity=".45"/>
+ </g>
+</g>
+<g fill="#b6a2ce" font-family="monospace" font-size="10" letter-spacing="1">
+ <text x="56" y="382">PART NUMBER</text><text x="260" y="382">STORAGE PATH</text><text x="484" y="382">COUNT / STATUS</text>
+ <text x="56" y="402" fill="#e8ddfb">RES-1K-025W</text><text x="260" y="402" fill="#e8ddfb">AREA / CABINET / DRAWER</text><text x="484" y="402" fill="#c9a8ff">TRACKED BY ROW</text>
+</g>
+</svg>
