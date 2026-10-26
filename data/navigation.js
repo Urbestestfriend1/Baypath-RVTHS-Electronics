@@ -21,6 +21,7 @@ window.SHOP_NAVIGATION = [
     { label: "Common", path: "/schematics/common" }
   ]},
   { label: "Projects", path: "/projects", icon: "◇" },
+  { label: "Inventory", path: "/inventory", icon: "▦" },
   { label: "Resources", path: "/resources", icon: "⌁", children: [
     { label: "Shop Safety", path: "/resources/safety" },
     { label: "Tools & Equipment", path: "/resources/tools" }
