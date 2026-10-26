@@ -1,57 +1,59 @@
-# Shop Class — Baypath RVTHS
+# Shop Class Hub — editing guide
 
-A modular, responsive static website for GitHub Pages. The design uses a dark workshop theme, a full-width homepage banner, nested navigation, instant client-side page changes, searchable sections, and reusable project detail pages.
+A dark, compact, modular website for Baypath RVTHS. It is a static website hosted with GitHub Pages; there is no build step.
 
-## GitHub Pages
+## The three files you will use most
 
-This repository is configured around a static site with no build step.
+| What you want to change | Open this file |
+|---|---|
+| Website name, colors, homepage text, banner image, homepage shortcut cards, quick links | `data/site-config.js` |
+| Main tabs and subtabs | `data/navigation.js` |
+| Projects, project photos, schematic, parts list, tools, steps, gallery and downloads | `data/projects.js` |
+| Other page titles, text, images and sections | `data/pages.js` |
+| Layout and fonts | `assets/css/styles.css` (only for deeper design changes) |
 
-1. Open **Settings → Pages**.
-2. Under **Build and deployment**, select **Deploy from a branch**.
-3. Use branch **main** and folder **/(root)**.
-4. Save. GitHub Pages will publish the current files after the build finishes.
+For most updates, you do **not** need to edit `index.html` or `assets/js/app.js`.
 
-## File map
+## Change the banner or colors
 
-```
-index.html                   Shared HTML shell
-data/
-  site-config.js             Brand, homepage wording, banner and card images
-  navigation.js              Tabs and nested subtabs
-  pages.js                   Copy and sections for ordinary pages
-  projects.js                Project catalog and reusable project-page data
-assets/
-  css/styles.css             Color theme, layout, responsive styling
-  js/app.js                  Navigation, search, page and project rendering
-  images/                    Replaceable local image files and icon
-```
+Open `data/site-config.js`.
 
-## Change the banner or homepage
+- Change `heroImage` to an image path such as `assets/images/my-banner.jpg`, or a direct image URL.
+- Change `heroTitleTop`, `heroTitleAccent`, and `intro` to edit the homepage copy.
+- Under `theme`, edit `background`, `surface`, `raised`, `border`, `text`, `muted`, `dim`, and `accent`. Use hex colors such as `#191c1f`.
+- Edit the `homeCards` array to rename, reorder, add, or remove homepage shortcuts.
+- Edit `quickLinks` to update the right-side links on the homepage.
 
-Open `data/site-config.js` and edit:
-- `heroImage`: path to the wide banner.
-- `heroImageAlt`: accessible description of the image.
-- `heroTitleTop`, `heroTitleAccent`, and `intro`: homepage text.
-- `homeCards`: homepage shortcuts, with an image and route per card.
+For photos, upload the image into `assets/images/` and use that file path. Wide photos work best for the homepage banner.
 
-Current banner photo: [Interior of a workshop with tools and equipment on Unsplash](https://unsplash.com/photos/interior-of-a-workshop-with-tools-and-equipment-Nh8G2yV2DYw) by Haberdoedas, under the Unsplash License. You can change `heroImage` to another HTTPS image URL, or upload your own photo into `assets/images/` and point `heroImage` to the local file. A wide landscape image (roughly 1800 × 600 px or similar) works well. The banner is full-bleed across the top; the text is a separate HTML overlay, so changing the photo does not mean editing the design.
+## Add or edit a project
 
-## Replace an image
+Open `data/projects.js`. Copy the sample project object and change at least:
 
-1. Add your photo or drawing to `assets/images/` (prefer JPG or WebP for photos, PNG for transparent screenshots, and SVG for vector drawings).
-2. Change the image path in `data/site-config.js`, `data/pages.js`, or `data/projects.js`, depending on where it's used.
-3. Commit the change. No code changes are required beyond the image path.
+1. `slug`: a unique URL-friendly name, like `wooden-tool-tray` (no spaces).
+2. `title`, `grade`, `category`, `summary`, and `description`.
+3. `featuredImage` and `featuredImageAlt`.
+4. `schematicImage` and `schematicAlt`.
+5. `objectives`, `materials`, `tools`, `steps`, `gallery`, `files`, and `notes`.
 
-## Add a tab or subtab
+Upload project photos and drawings into `assets/images/` and point the fields to those paths. For PDFs, you can put files into an `assets/files/` folder and use the path in `files[].href`. Set `featured: true` to show a real project on the home page. When you turn the sample into an actual project, change `template: true` to `template: false`.
 
-Edit `data/navigation.js`. Each navigation entry has a label and a unique route path. Nested `children` arrays make subtabs.
+The project page is generated automatically at `#/projects/your-slug`. You do not need to create a separate HTML page.
 
-Example:
+## Add a new navigation tab or subtab
+
+1. Add an entry to `data/navigation.js`. Nested `children` arrays create subtabs.
+2. If it is a normal content page, add an entry with the same path in `data/pages.js`.
+3. Routes under `/projects/...` are created automatically from the project slug and do not need a separate page entry.
+
+Example navigation item:
+
 ```js
 { label: "Measurement charts", path: "/schematics/common/measurement-charts" }
 ```
 
-For all ordinary pages, also add a matching entry in `data/pages.js`:
+Example content entry in `data/pages.js`:
+
 ```js
 "/schematics/common/measurement-charts": {
   eyebrow: "SCHEMATICS / COMMON",
@@ -68,40 +70,17 @@ For all ordinary pages, also add a matching entry in `data/pages.js`:
 }
 ```
 
-`/projects` is special: it is rendered from `data/projects.js` and does not need a separate entry in `data/pages.js`.
+## Save and publish changes
 
-## Reusable project page template
+1. Open the file in GitHub.
+2. Click the pencil icon to edit, or use **Add file → Upload files** to add pictures.
+3. Commit the changes to `main`.
+4. GitHub Pages publishes the changes automatically after its deployment finishes.
 
-Edit `data/projects.js`. The file contains an example object with all the main fields. Copy the object for a new project and change the `slug` to a unique URL-friendly value.
-
-Each project can have:
-- `title`, `slug`, `grade`, `category`, `status`, and `summary`
-- `featuredImage` and `featuredImageAlt`
-- `description` and `objectives`
-- `schematicImage` and `schematicAlt`
-- `materials` (name, quantity, notes) and `tools`
-- `steps` (title, instructions, optional image)
-- `gallery` (image, alt text, caption)
-- `files` (label, href, description) and `notes`
-- `featured: true` to show it on the homepage
-- `template: true` to label the entry as a sample
-
-Example paths:
-- Gallery: `#/projects`
-- Project detail: `#/projects/project-template`
-
-Upload images into `assets/images/` and set the relevant paths. You can include PDF schematics in the repository as well, for example under a new `assets/files/` folder, then point `schematicImage` or `files[].href` to the relevant file. For a PDF, a download link in `files` is often better than trying to show it as an image.
-
-## Edit the design
-
-Open `assets/css/styles.css`. The main theme colors are at the top in `:root`:
-- `--bg`: main background
-- `--surface` and `--surface-2`: panels
-- `--text`, `--muted`: text colors
-- `--accent`: yellow highlight color
+Changes to page content and configuration normally need only a file edit and commit.
 
 ## Notes
 
-- This is a static website. GitHub Pages serves pages, photos, PDFs and client-side features but does not provide private accounts or a secure database by itself.
-- Repository files and a public Pages site may be visible to anyone. Do not upload private student information or restricted class materials. Follow school policies.
-- Keep safety information aligned with the official material and instructions provided by your teacher.
+- All repository files and a public Pages site may be visible to anyone. Do not upload private student information or restricted class materials.
+- This is a static site. It can display pages, images, PDFs, and client-side features, but it does not provide private accounts or a secure database by itself.
+- Safety information should come from the official instructions supplied by the teacher.
