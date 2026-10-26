@@ -11,8 +11,8 @@ window.SHOP_CONFIG = {
   heroTitleTop: "SHOP CLASS",
   heroTitleAccent: "Build skills. Make things.",
   intro: "Your home for project builds, schematics, and useful shop references.",
-  heroImage: "assets/images/workshop-banner.svg",
-  heroImageAlt: "Workshop bench illustration with plans and tools",
+  heroImage: "https://images.unsplash.com/photo-1773325076569-c166714c4097?auto=format&fit=crop&fm=jpg&ixid=NHwxMjA3fDA%3D&ixlib=rb-4.1.0&q=60&w=3000",
+  heroImageAlt: "Dark workshop interior with tools and work surfaces",
   homeCards: [
     { eyebrow: "PLANS / DRAWINGS", title: "Schematics", description: "Find drawings and diagrams, organized by grade and topic.", image: "assets/images/schematic.svg", imageAlt: "Technical schematic drawing", path: "/schematics", linkLabel: "Open schematics" },
     { eyebrow: "BUILDS / DOCUMENTATION", title: "Projects", description: "Project pages with photos, plans, materials, and build steps.", image: "assets/images/project.svg", imageAlt: "Project on a workbench", path: "/projects", linkLabel: "View projects" },
