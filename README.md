@@ -28,7 +28,7 @@ Project pages now separate the work into a guided order: **Project brief → Des
 Each project object in `data/projects.js` includes the content for its page. In particular:
 
 - `designProcess` explains the decisions to make before assembly.
-- `steps` is the numbered, physical build sequence. Each step can include `why` and `check) fields so the instruction is easier to follow and verify.
+- `steps` is the numbered, physical build sequence. Each step can include `why` and `check` fields so the instruction is easier to follow and verify.
 - `verification` describes expected behavior and measurements.
 - `troubleshooting` lists common problems, possible causes, and fixes.
 
