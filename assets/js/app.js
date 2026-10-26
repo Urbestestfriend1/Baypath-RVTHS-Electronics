@@ -378,6 +378,18 @@
   document.getElementById("footer-school").textContent = cfg.schoolName || "Shop Class";
   document.getElementById("footer-year").textContent = "© " + new Date().getFullYear();
 
+  app.addEventListener("click", event => {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+    const destination = link.getAttribute("href");
+    if (!destination || destination.startsWith("#/")) return;
+    const target = document.getElementById(destination.slice(1));
+    if (!target) return;
+    event.preventDefault();
+    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+  });
+
   menuButton.addEventListener("click", () => {
     const open = topNav.classList.toggle("open");
     menuButton.setAttribute("aria-expanded", String(open));
