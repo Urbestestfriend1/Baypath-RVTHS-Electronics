@@ -1,79 +1,107 @@
-# Workshop — Shop Class Hub
+# Shop Class — Baypath RVTHS
 
-A modular, responsive static site for GitHub Pages. It has a designed home page, replaceable image assets, nested navigation, page search, breadcrumb navigation, and content that is kept separate from the layout code.
+A modular, responsive static website for GitHub Pages. The design uses a dark workshop theme, a full-width homepage banner, nested navigation, instant client-side page changes, searchable sections, and reusable project detail pages.
 
-## Publish with GitHub Pages
+## GitHub Pages
 
-1. Open this repository on GitHub.
-2. Go to **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Choose branch **main** and folder **/(root)**, then save.
-5. After the deployment finishes, use the URL displayed on the Pages settings screen.
+This repository is configured around a static site with no build step.
 
-There is no build step or package manager. Changes pushed to `main` will be published by Pages when enabled.
+1. Open **Settings → Pages**.
+2. Under **Build and deployment**, select **Deploy from a branch**.
+3. Use branch **main** and folder **/(root)**.
+4. Save. GitHub Pages will publish the current files after the build finishes.
 
-## Project layout
+## File map
 
 ```
-index.html                   Main HTML shell and script/style links
+index.html                   Shared HTML shell
 data/
-  site-config.js             Homepage text, cards, and image paths
-  navigation.js              Top tabs, subtabs, and hierarchy
-  pages.js                   Page titles, descriptions, sections, cards
+  site-config.js             Brand, homepage wording, banner and card images
+  navigation.js              Tabs and nested subtabs
+  pages.js                   Copy and sections for ordinary pages
+  projects.js                Project catalog and reusable project-page data
 assets/
-  css/styles.css             Theme and responsive design
-  js/app.js                  Navigation, search, and page rendering
-  images/                    Replaceable SVG artwork and future photos
+  css/styles.css             Color theme, layout, responsive styling
+  js/app.js                  Navigation, search, page and project rendering
+  images/                    Replaceable local image files and icon
 ```
 
-## Edit the homepage and images
+## Change the banner or homepage
 
-Open `data/site-config.js`. Change the values under `heroTitleTop`, `heroTitleAccent`, and `intro` to update the hero area. Change `heroImage` to change the large banner. Each `homeCards` entry has its own `image`, `imageAlt`, and text.
+Open `data/site-config.js` and edit:
+- `heroImage`: path to the wide banner.
+- `heroImageAlt`: accessible description of the image.
+- `heroTitleTop`, `heroTitleAccent`, and `intro`: homepage text.
+- `homeCards`: homepage shortcuts, with an image and route per card.
 
-To replace an image, add the file under `assets/images/` and update the matching image path. JPG, PNG, WebP, and SVG are suitable formats; compressed JPG/WebP generally work well for photos. Update the alt text when the picture changes.
+To use your own photo, upload it into `assets/images/` and point `heroImage` to it. A wide landscape image (roughly 1800 × 600 px or similar) works well. The banner is full-bleed across the top; the text is a separate HTML overlay, so changing the photo does not mean editing the design.
 
-## Add a page or subtab
+## Replace an image
 
-1. Open `data/navigation.js` and add a navigation item with a unique path, for example:
-   ```js
-   { label: "Measurement charts", path: "/schematics/common/measurement-charts" }
-   ```
-2. Open `data/pages.js` and add an object with the same path as its key:
-   ```js
-   "/schematics/common/measurement-charts": {
-     eyebrow: "SCHEMATICS / COMMON",
-     title: "Measurement charts",
-     description: "Reference charts for the shop.",
-     sections: [
-       {
-         heading: "Quick reference",
-         text: "Explain what this chart covers.",
-         image: "assets/images/measurement-chart.png",
-         imageAlt: "Shop measurement chart"
-       }
-     ]
-   }
-   ```
-3. Add the image at the specified path, if used, and commit the changes.
+1. Add your photo or drawing to `assets/images/` (prefer JPG or WebP for photos, PNG for transparent screenshots, and SVG for vector drawings).
+2. Change the image path in `data/site-config.js`, `data/pages.js`, or `data/projects.js`, depending on where it's used.
+3. Commit the change. No code changes are required beyond the image path.
 
-A `children` array on a navigation entry creates subtabs beneath it. Give every page a matching entry in `data/pages.js`.
+## Add a tab or subtab
 
-## Edit a page
+Edit `data/navigation.js`. Each navigation entry has a label and a unique route path. Nested `children` arrays make subtabs.
 
-In `data/pages.js`, every page can have:
-- `eyebrow`, `title`, `description`
-- `sections`: each section supports `heading`, `text`, optional `image`, `imageAlt`, and `bullets`
-- `cards`: optional cards with `title`, `description`, `image`, `imageAlt`, `tag`, and optionally `path` and `linkLabel`
-- `callout`: optional highlighted note with `title` and `text`
+Example:
+```js
+{ label: "Measurement charts", path: "/schematics/common/measurement-charts" }
+```
 
-Keep these fields as text, not raw HTML.
+For all ordinary pages, also add a matching entry in `data/pages.js`:
+```js
+"/schematics/common/measurement-charts": {
+  eyebrow: "SCHEMATICS / COMMON",
+  title: "Measurement charts",
+  description: "Useful measurement references for the shop.",
+  sections: [
+    {
+      heading: "Quick reference",
+      text: "Add a short explanation.",
+      image: "assets/images/measurement-chart.png",
+      imageAlt: "Measurement chart"
+    }
+  ]
+}
+```
 
-## Change the design
+`/projects` is special: it is rendered from `data/projects.js` and does not need a separate entry in `data/pages.js`.
 
-Edit `assets/css/styles.css`. The main theme variables are at the top under `:root`, including `--bg`, `--panel`, `--text`, and `--lime`.
+## Reusable project page template
+
+Edit `data/projects.js`. The file contains an example object with all the main fields. Copy the object for a new project and change the `slug` to a unique URL-friendly value.
+
+Each project can have:
+- `title`, `slug`, `grade`, `category`, `status`, and `summary`
+- `featuredImage` and `featuredImageAlt`
+- `description` and `objectives`
+- `schematicImage` and `schematicAlt`
+- `materials` (name, quantity, notes) and `tools`
+- `steps` (title, instructions, optional image)
+- `gallery` (image, alt text, caption)
+- `files` (label, href, description) and `notes`
+- `featured: true` to show it on the homepage
+- `template: true` to label the entry as a sample
+
+Example paths:
+- Gallery: `#/projects`
+- Project detail: `#/projects/project-template`
+
+Upload images into `assets/images/` and set the relevant paths. You can include PDF schematics in the repository as well, for example under a new `assets/files/` folder, then point `schematicImage` or `files[].href` to the relevant file. For a PDF, a download link in `files` is often better than trying to show it as an image.
+
+## Edit the design
+
+Open `assets/css/styles.css`. The main theme colors are at the top in `:root`:
+- `--bg`: main background
+- `--surface` and `--surface-2`: panels
+- `--text`, `--muted`: text colors
+- `--accent`: yellow highlight color
 
 ## Notes
 
-- This is a static website. GitHub Pages can serve pages, images, downloads, and client-side interactions, but it does not provide private user accounts or a secure database by itself.
-- A public repository and public Pages site are visible to others. Don't upload private student information or restricted class files; follow school policy and teacher instructions.
-- Use teacher-approved material for safety procedures. This starter site is not a replacement for instruction or supervision.
+- This is a static website. GitHub Pages serves pages, photos, PDFs and client-side features but does not provide private accounts or a secure database by itself.
+- Repository files and a public Pages site may be visible to anyone. Do not upload private student information or restricted class materials. Follow school policies.
+- Keep safety information aligned with the official material and instructions provided by your teacher.
