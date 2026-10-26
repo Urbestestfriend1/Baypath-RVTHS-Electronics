@@ -388,5 +388,7 @@
     if (event.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { event.preventDefault(); search.focus(); }
   });
   window.addEventListener("popstate", render);
+  // Support bookmarked/direct hash routes too; non-route anchors like #main-content stay ordinary page anchors.
+  window.addEventListener("hashchange", () => { if (location.hash.startsWith("#/")) render(); });
   render();
 })();
