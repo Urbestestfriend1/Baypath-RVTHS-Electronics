@@ -1,5 +1,5 @@
 /*
-  SHOP CLASS HUB — SITE SETTINGS
+  ELECTRONICS SITE SETTINGS
   Edit this file for the site name, theme palette, homepage library cards, and quick links.
   Project records live in data/projects.js; inventory records live in data/inventory.js.
 */
@@ -8,16 +8,16 @@ window.SHOP_CONFIG = {
   tagline: "BAYPATH RVTHS",
   schoolName: "Baypath Regional Vocational Technical High School",
   theme: {
-    background: "#0b0b0f",
-    surface: "#141419",
-    raised: "#1d1d24",
-    border: "#34343d",
-    text: "#eeeeF3",
-    muted: "#b9b9c3",
-    dim: "#91919d",
-    accent: "#b5a4d4"
+    background: "#f3f5f7",
+    surface: "#ffffff",
+    raised: "#edf1f5",
+    border: "#d7dee7",
+    text: "#202a36",
+    muted: "#4d5a69",
+    dim: "#657384",
+    accent: "#315f86"
   },
-  heroEyebrow: "BAYPATH REGIONAL VOCATIONAL TECHNICAL HIGH SCHOOL",
+  heroEyebrow: "Baypath Regional Vocational Technical High School",
   heroTitleTop: "ELECTRONICS",
   heroTitleAccent: "Plan it. Build it. Test it.",
   intro: "A working reference for shop projects, schematics, parts, equipment, and the details that help a build go right.",
@@ -25,7 +25,7 @@ window.SHOP_CONFIG = {
   heroImageAlt: "Illustration of organized labeled component storage bins",
   homeCards: [
     {
-      eyebrow: "PARTS / LOCATIONS / COUNTS",
+      eyebrow: "Parts, locations, and counts",
       title: "Inventory",
       description: "Search the master shop catalog by part number, name, category, storage area, quantity, or notes. Filter and sort the complete list, review stock status, and export the current results when you need to work with the data in a spreadsheet.",
       image: "assets/images/inventory-shelf.svg",
@@ -34,7 +34,7 @@ window.SHOP_CONFIG = {
       linkLabel: "Find a part"
     },
     {
-      eyebrow: "BUILD / DOCUMENT / TEST",
+      eyebrow: "Build, document, and test",
       title: "Projects",
       description: "Follow a project from its purpose and design choices through the schematic, parts and tools, numbered assembly steps, verification checks, and troubleshooting notes. Keep the reasons behind the design close to the actual build procedure.",
       image: "assets/images/cover-555-timer.svg",
@@ -43,7 +43,7 @@ window.SHOP_CONFIG = {
       linkLabel: "Browse project files"
     },
     {
-      eyebrow: "CIRCUITS / DIAGRAMS",
+      eyebrow: "Circuits and diagrams",
       title: "Schematics",
       description: "Open circuit drawings by class year or use the common-circuit shelf for shared references. Use each diagram to plan connections and check your wiring, while confirming part ratings and pinouts from the relevant datasheet.",
       image: "assets/images/schematic.svg",
@@ -52,7 +52,7 @@ window.SHOP_CONFIG = {
       linkLabel: "Browse drawings"
     },
     {
-      eyebrow: "SHARED TECHNICAL REFERENCE",
+      eyebrow: "Shared technical reference",
       title: "Common circuits",
       description: "Review reusable circuit examples for timing, LED current limiting, and transistor switching. Each reference includes the design idea, a schematic, component list, build instructions, and ways to test the result.",
       image: "assets/images/cover-transistor-switch.svg",
@@ -61,7 +61,7 @@ window.SHOP_CONFIG = {
       linkLabel: "Open circuit shelf"
     },
     {
-      eyebrow: "SAFETY / EQUIPMENT / CLASS",
+      eyebrow: "Safety, equipment, and class material",
       title: "Resources",
       description: "Find shop safety material, tool and equipment references, and shared class notes. The goal is to keep practical information easy to locate and close at hand when working at the bench.",
       image: "assets/images/resources.svg",
