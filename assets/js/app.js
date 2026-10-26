@@ -49,17 +49,16 @@
 
   // All site links use hash routes. Intercept them and render immediately rather than
   // waiting for a full-page navigation or a browser refresh. pushState keeps Back/Forward working.
-  function navigate(path, replace) {
+  // Let normal hash navigation update the URL, then render from hashchange.
+  // This avoids relying on a custom document click handler and keeps the UI in sync.
+  function navigate(path) {
     const nextUrl = href(path || "/");
     if (location.hash === nextUrl) {
       render();
       window.scrollTo(0, 0);
       return;
     }
-    if (replace) history.replaceState({ shopRoute: path }, "", nextUrl);
-    else history.pushState({ shopRoute: path }, "", nextUrl);
-    render();
-    window.scrollTo(0, 0);
+    location.hash = (path || "/");
   }
 
   function renderTop(path) {
@@ -362,13 +361,6 @@
   document.getElementById("footer-brand").textContent = cfg.brand || "SHOP CLASS";
   document.getElementById("footer-year").textContent = "© " + new Date().getFullYear() + " · BAYPATH RVTHS";
 
-  document.addEventListener("click", event => {
-    const anchor = event.target.closest && event.target.closest('a[href^="#/"]');
-    if (!anchor || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    navigate(anchor.getAttribute("href").slice(1));
-  });
-
   menuButton.addEventListener("click", () => {
     const open = topNav.classList.toggle("open");
     menuButton.setAttribute("aria-expanded", String(open));
@@ -388,8 +380,12 @@
   document.addEventListener("keydown", event => {
     if (event.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { event.preventDefault(); search.focus(); }
   });
-  window.addEventListener("popstate", render);
-  // Support bookmarked/direct hash routes too; non-route anchors like #main-content stay ordinary page anchors.
-  window.addEventListener("hashchange", () => { if (location.hash.startsWith("#/")) render(); });
+  // Native fragment navigation fires this on link clicks and Back/Forward.
+  window.addEventListener("hashchange", () => {
+    if (location.hash.startsWith("#/")) {
+      render();
+      window.scrollTo(0, 0);
+    }
+  });
   render();
 })();
