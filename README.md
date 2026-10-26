@@ -41,6 +41,8 @@ Upload local images into `assets/images/` and reference them with paths such as 
 
 The inventory tab is backed by `data/inventory.js`. It supports full-catalog search, category and storage-area filters, stock-status filtering, sortable columns, 25/50/100/200-row pagination, and CSV export. Every row can store an ID, part number, name, manufacturer, category, description, quantity and unit, minimum stock level, condition, supplier, area/cabinet/shelf/bin location, notes, a datasheet link, and the last-update date.
 
+**Category means the kind of item**, for example Resistors, Capacitors, LEDs & Displays, Integrated Circuits, or Wires & Cables. Reuse an existing category when possible; consistent spelling makes the filter useful. **Storage area means where the item is kept** (such as a room or work area). Cabinet, shelf/drawer, and bin identify the exact spot. **Stock status is based on the quantity**: positive and above its minimum is in stock; positive at or below a configured minimum is low stock; zero is out of stock; and `null` means the count needs to be checked. Use a consistent unit such as `pcs`, `sets`, or `reels`.
+
 **Important:** the starter catalog contains 25 clearly marked demo rows, not verified Baypath inventory. Replace or remove them with counted stock records before relying on quantities or locations. The site is static: browser filters and exported CSV files do not write changes back into the repository. Permanent changes are made in `data/inventory.js` and committed to GitHub. See `EDITING-GUIDE.md` for the field-by-field example.
 
 ## Add tabs or regular pages
@@ -49,9 +51,11 @@ The inventory tab is backed by `data/inventory.js`. It supports full-catalog sea
 2. Add matching regular-page content in `data/pages.js`.
 3. Project detail routes are generated from each project's `slug` and do not require a separate page entry.
 
-## Customize appearance
+## Appearance settings
 
-Change the core colors in the `theme` object in `data/site-config.js`. Edit `assets/css/styles.css` for deeper layout and visual changes. The responsive rules are at the bottom of the stylesheet.
+The site opens in **light mode**. Use the **Dark mode** button in the top-right header to switch to a dark palette. Your choice is saved in this browser and applies as you move between pages; other visitors can choose their own mode. If browser storage is unavailable, the site still works and starts in light mode.
+
+For site-wide color or layout changes, the core palette is in the `theme` object in `data/site-config.js`; deeper layout and appearance rules are in `assets/css/styles.css`.
 
 ## Publish and safety
 
