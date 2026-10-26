@@ -299,6 +299,10 @@
     const project = getProjectFromPath(path);
     renderTop(path);
     app.innerHTML = path === "/" ? renderHome() : project ? renderProjectDetail(project, path) : renderPage(path);
+    // Replay the transition whenever route content is replaced.
+    app.classList.remove("is-entering");
+    void app.offsetWidth;
+    app.classList.add("is-entering");
     const currentPage = pages[path];
     document.title = (project ? project.title : currentPage ? currentPage.title : path === "/" ? "Home" : "Shop Class") + " — " + (cfg.brand || "Shop Class");
     topNav.classList.remove("open");
