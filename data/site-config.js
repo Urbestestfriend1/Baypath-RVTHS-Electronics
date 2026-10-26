@@ -4,7 +4,7 @@
   Project records live in data/projects.js; inventory records live in data/inventory.js.
 */
 window.SHOP_CONFIG = {
-  brand: "SHOP CLASS",
+  brand: "ELECTRONICS",
   tagline: "BAYPATH RVTHS",
   schoolName: "Baypath Regional Vocational Technical High School",
   theme: {
@@ -18,7 +18,7 @@ window.SHOP_CONFIG = {
     accent: "#b5a4d4"
   },
   heroEyebrow: "BAYPATH REGIONAL VOCATIONAL TECHNICAL HIGH SCHOOL",
-  heroTitleTop: "SHOP CLASS",
+  heroTitleTop: "ELECTRONICS",
   heroTitleAccent: "Plan it. Build it. Test it.",
   intro: "A working reference for shop projects, schematics, parts, equipment, and the details that help a build go right.",
   heroImage: "assets/images/inventory-shelf.svg",
