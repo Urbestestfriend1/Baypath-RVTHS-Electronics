@@ -12,6 +12,8 @@
   const contextNav = document.getElementById("context-nav");
   const search = document.getElementById("site-search");
   const results = document.getElementById("search-results");
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeToggleLabel = document.getElementById("theme-toggle-label");
   const menuButton = document.getElementById("menu-button");
   const sidebar = document.getElementById("site-sidebar");
   const sidebarBackdrop = document.getElementById("sidebar-backdrop");
@@ -54,6 +56,32 @@
     Object.entries(variables).forEach(([key, value]) => {
       if (value) document.documentElement.style.setProperty(key, value);
     });
+  }
+
+  const colorModeKey = "baypath-electronics-color-mode";
+  function savedColorMode() {
+    try {
+      return window.localStorage.getItem(colorModeKey) === "dark" ? "dark" : "light";
+    } catch (_) {
+      return "light";
+    }
+  }
+  function applyColorMode(mode, persist) {
+    const selected = mode === "dark" ? "dark" : "light";
+    document.documentElement.dataset.theme = selected;
+    document.body.dataset.theme = selected;
+    document.documentElement.style.colorScheme = selected;
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) metaThemeColor.setAttribute("content", selected === "dark" ? "#101318" : "#f3f5f7");
+    if (themeToggle) {
+      themeToggle.setAttribute("aria-pressed", String(selected === "dark"));
+      themeToggle.setAttribute("aria-label", "Toggle dark mode");
+      themeToggle.title = selected === "dark" ? "Dark mode is on. Select to use light mode." : "Dark mode is off. Select to use dark mode.";
+    }
+    if (themeToggleLabel) themeToggleLabel.textContent = selected === "dark" ? "Dark mode: On" : "Dark mode";
+    if (persist) {
+      try { window.localStorage.setItem(colorModeKey, selected); } catch (_) {}
+    }
   }
 
   function renderTop(path) {
@@ -266,12 +294,12 @@
     const arrow=k=>inventoryState.sortBy===k?(inventoryState.sortDir==="asc"?" ↑":" ↓"):"";
     host.innerHTML='<div class="inventory-table-toolbar"><div><p class="inventory-range"><strong>'+range+'</strong> of '+total.toLocaleString("en-US")+' matching records</p><span>Page '+inventoryState.page+' of '+pageCount+'</span></div><label class="page-size-control">Rows per page <select id="inventory-page-size">'+[25,50,100,200].map(n=>'<option value="'+n+'"'+(n===size?" selected":"")+'>'+n+'</option>').join("")+'</select></label></div>'+
       '<div class="inventory-table-scroll"><table class="inventory-table"><thead><tr>'+
-      '<th><button type="button" data-inventory-sort="partNumber">PART NUMBER'+arrow("partNumber")+'</button></th>'+
-      '<th><button type="button" data-inventory-sort="name">PART / MAKER'+arrow("name")+'</button></th>'+
-      '<th><button type="button" data-inventory-sort="category">CATEGORY'+arrow("category")+'</button></th>'+
-      '<th><button type="button" data-inventory-sort="location">STORAGE LOCATION'+arrow("location")+'</button></th>'+
-      '<th><button type="button" data-inventory-sort="quantity">QUANTITY'+arrow("quantity")+'</button></th>'+
-      '<th><button type="button" data-inventory-sort="status">STOCK STATUS'+arrow("status")+'</button></th><th>DESCRIPTION / NOTES</th></tr></thead><tbody>'+inventoryTableRows(shown)+'</tbody></table></div>'+
+      '<th><button type="button" data-inventory-sort="partNumber">Part number'+arrow("partNumber")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="name">Part / maker'+arrow("name")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="category">Category'+arrow("category")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="location">Storage location'+arrow("location")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="quantity">Quantity'+arrow("quantity")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="status">Stock status'+arrow("status")+'</button></th><th>Description / notes</th></tr></thead><tbody>'+inventoryTableRows(shown)+'</tbody></table></div>'+
       '<div class="inventory-pagination"><span>Showing '+range+' records</span><div><button type="button" class="button button-outline" data-inventory-prev '+(inventoryState.page<=1?"disabled":"")+'>← Previous</button><span>Page '+inventoryState.page+' / '+pageCount+'</span><button type="button" class="button button-outline" data-inventory-next '+(inventoryState.page>=pageCount?"disabled":"")+'>Next →</button></div></div>';
     const summary=document.getElementById("inventory-live-summary");if(summary)summary.textContent=total.toLocaleString("en-US")+" matching record"+(total===1?"":"s");
   }
@@ -283,16 +311,21 @@
       '<p>A searchable, structured catalog for electronic components, wiring, hand tools, test equipment, consumables, and reusable shop assets. Search by the part you know, filter by where it lives, and sort the list to review quantities or identify records that need attention. As the catalog grows, filters narrow the full dataset while pagination keeps each view manageable.</p></div>'+
       '<div class="inventory-heading-side"><span class="inventory-heading-icon">▦</span><strong>MASTER STOCK LIST</strong><small>Part → Location → Quantity → Notes</small><a href="#inventory-catalog">Browse the catalog ↓</a></div></header>'+
       (isExample?'<aside class="inventory-demo-notice"><span class="demo-notice-icon">!</span><div><strong>Demonstration data — not verified Baypath stock</strong><p>The rows below are examples that show how the catalog works. Quantities, manufacturers, and storage locations are fictional sample values. Replace or remove these records in <code>data/inventory.js</code> before using the table to locate real parts or make purchasing decisions.</p></div></aside>':"")+
-      '<section class="inventory-summary-grid" aria-label="Inventory summary"><div class="inventory-summary-card"><span>CATALOG LINES</span><strong>'+inventory.length.toLocaleString("en-US")+'</strong><small>'+(isExample?"Example records loaded":"Records in the catalog")+'</small></div>'+
-      '<div class="inventory-summary-card"><span>PART CATEGORIES</span><strong>'+categories.length.toString().padStart(2,"0")+'</strong><small>Filter the list by type</small></div>'+
-      '<div class="inventory-summary-card"><span>LOW STOCK</span><strong>'+(isExample?"—":low.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"At or below minimum quantity")+'</small></div>'+
-      '<div class="inventory-summary-card"><span>OUT OF STOCK</span><strong>'+(isExample?"—":out.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"Requires a restock check")+'</small></div></section>'+
-      '<section class="inventory-catalog" id="inventory-catalog"><div class="inventory-catalog-heading"><div><p class="section-overline">MASTER TABLE</p><h2>Find an item</h2><p>Combine filters to narrow the list. Search checks part numbers, names, manufacturer, storage location, descriptions, and notes.</p></div><div class="inventory-catalog-actions"><button type="button" class="button button-outline" data-inventory-reset>Reset filters</button><button type="button" class="button button-accent" data-inventory-export>Export CSV ↗</button></div></div>'+
-      '<div class="inventory-filter-grid"><label class="inventory-search-control"><span>SEARCH THE CATALOG</span><div class="inventory-search-box"><span>⌕</span><input type="search" id="inventory-search" value="'+esc(inventoryState.query)+'" placeholder="Part #, name, value, bin, maker, notes…" autocomplete="off"><kbd>/</kbd></div></label>'+
-      '<label><span>CATEGORY</span><select id="inventory-category">'+optionList(categories,inventoryState.category,"All categories")+'</select></label>'+
-      '<label><span>STORAGE AREA</span><select id="inventory-area">'+optionList(areas,inventoryState.area,"All locations")+'</select></label>'+
-      '<label><span>STOCK STATUS</span><select id="inventory-stock"><option value="all"'+(inventoryState.stock==="all"?" selected":"")+'>All statuses</option><option value="in"'+(inventoryState.stock==="in"?" selected":"")+'>In stock</option><option value="low"'+(inventoryState.stock==="low"?" selected":"")+'>Low stock</option><option value="out"'+(inventoryState.stock==="out"?" selected":"")+'>Out of stock</option><option value="unknown"'+(inventoryState.stock==="unknown"?" selected":"")+'>Count needed</option></select></label></div>'+
-      '<div class="inventory-results-strip"><span class="inventory-live-dot"></span><span id="inventory-live-summary" aria-live="polite">Loading catalog results</span><span class="inventory-strip-note">Quantities are shown with each item’s unit and restock minimum.</span></div><div id="inventory-results" aria-live="polite"></div>'+
+      '<section class="inventory-summary-grid" aria-label="Inventory summary"><div class="inventory-summary-card"><span>Catalog records</span><strong>'+inventory.length.toLocaleString("en-US")+'</strong><small>'+(isExample?"Example records loaded":"Records in the catalog")+'</small></div>'+
+      '<div class="inventory-summary-card"><span>Categories</span><strong>'+categories.length.toString().padStart(2,"0")+'</strong><small>Types of item listed</small></div>'+
+      '<div class="inventory-summary-card"><span>Low stock</span><strong>'+(isExample?"—":low.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"At or below minimum quantity")+'</small></div>'+
+      '<div class="inventory-summary-card"><span>Out of stock</span><strong>'+(isExample?"—":out.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"Quantity recorded as zero")+'</small></div></section>'+
+      '<section class="inventory-catalog" id="inventory-catalog"><div class="inventory-catalog-heading"><div><p class="section-overline">INVENTORY TABLE</p><h2>Find an item</h2><p>Use search or combine filters. Search checks part numbers, item names, manufacturers, categories, storage paths, descriptions, and notes.</p></div><div class="inventory-catalog-actions"><button type="button" class="button button-outline" data-inventory-reset>Reset filters</button><button type="button" class="button button-accent" data-inventory-export>Export CSV</button></div></div>'+
+      '<section class="inventory-how-to" aria-labelledby="inventory-how-to-title"><div class="inventory-how-to-header"><h3 id="inventory-how-to-title">How to use the catalog</h3><p>Filters work together. For example, choose a category and a storage area to see only that type of item stored in that place.</p></div><div class="inventory-help-grid">'+
+      '<div><strong>Search</strong><p>Type part of a name, part number, value, manufacturer, cabinet, shelf, bin, or note. Partial words work.</p></div>'+
+      '<div><strong>Category = what it is</strong><p>Choose a type of item, such as Resistors, Capacitors, LEDs &amp; Displays, Integrated Circuits, or Wires &amp; Cables.</p></div>'+
+      '<div><strong>Storage area = where it is</strong><p>Choose the room or area first. The table shows a more specific cabinet, drawer or shelf, and bin when recorded.</p></div>'+
+      '<div><strong>Stock status = what needs attention</strong><p>In stock means above the minimum. Low stock means the count is at or below the minimum but above zero. Out of stock means zero. Count needed means the quantity is unknown.</p></div></div><p class="inventory-help-footer">Click a table heading to sort. Use <strong>Reset filters</strong> to clear the search and filters. <strong>Export CSV</strong> downloads records that match your current filters; it does not change the website data.</p></section>'+
+      '<div class="inventory-filter-grid"><label class="inventory-search-control"><span>Search items</span><div class="inventory-search-box"><span aria-hidden="true">⌕</span><input type="search" id="inventory-search" aria-label="Search inventory by name, part number, location, or notes" value="'+esc(inventoryState.query)+'" placeholder="Try “1 kΩ”, “LED”, or “Cabinet A”" autocomplete="off"><kbd>/</kbd></div></label>'+
+      '<label><span>Category (item type)</span><select id="inventory-category" aria-label="Filter by item category">'+optionList(categories,inventoryState.category,"All categories")+'</select></label>'+
+      '<label><span>Storage area (where it is)</span><select id="inventory-area" aria-label="Filter by storage area">'+optionList(areas,inventoryState.area,"All areas")+'</select></label>'+
+      '<label><span>Stock status</span><select id="inventory-stock" aria-label="Filter by stock status"><option value="all"'+(inventoryState.stock==="all"?" selected":"")+'>All statuses</option><option value="in"'+(inventoryState.stock==="in"?" selected":"")+'>In stock</option><option value="low"'+(inventoryState.stock==="low"?" selected":"")+'>Low stock</option><option value="out"'+(inventoryState.stock==="out"?" selected":"")+'>Out of stock</option><option value="unknown"'+(inventoryState.stock==="unknown"?" selected":"")+'>Count needed</option></select></label></div>'+
+      '<div class="inventory-results-strip"><span class="inventory-live-dot"></span><span id="inventory-live-summary" aria-live="polite">Loading catalog results</span><span class="inventory-strip-note">Counts are shown with their units and minimum restock levels.</span></div><div id="inventory-results" aria-live="polite"></div>'+
       '<div class="inventory-field-guide"><div><span class="field-guide-mark">01</span><div><strong>Part number</strong><p>Use a consistent internal ID, manufacturer SKU, or other unique identifier. Keep it stable when an item is moved to another shelf.</p></div></div><div><span class="field-guide-mark">02</span><div><strong>Storage location</strong><p>Record the area, cabinet, shelf or drawer, and bin. Make the location specific enough that someone unfamiliar with the list can find the item without guessing.</p></div></div><div><span class="field-guide-mark">03</span><div><strong>Quantity & minimum</strong><p>Record the counted amount and the level that should trigger a restock review. Use a consistent unit such as pcs, sets, reels, or units.</p></div></div></div></section>'+
       '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>Keep counts trustworthy.</strong><p>This is a static catalog, so permanent changes are made in <code>data/inventory.js</code> and published with a GitHub commit. Search, filters, sorting, pagination, and CSV export work in the browser, but changing a displayed quantity does not write it back to GitHub. Periodic counts and a consistent part-number format keep the master list dependable.</p></div></aside></div>';
   }
@@ -504,6 +537,13 @@
   }
 
   setTheme();
+  applyColorMode(savedColorMode(), false);
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const nextMode = document.body.dataset.theme === "dark" ? "light" : "dark";
+      applyColorMode(nextMode, true);
+    });
+  }
   document.getElementById("brand-name").textContent = cfg.brand || "ELECTRONICS";
   document.getElementById("brand-tagline").textContent = cfg.tagline || "BAYPATH RVTHS";
   document.getElementById("footer-brand").textContent = cfg.brand || "ELECTRONICS";
