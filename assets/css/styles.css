@@ -739,3 +739,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   .verification-panel{padding:12px}
   .return-row{align-items:flex-start;flex-direction:column}
 }
+
+/* Sidebar items use a full-row active state rather than the former horizontal underline. */
+.site-sidebar .top-nav a[aria-current=page]:after{display:none}
