@@ -16,6 +16,10 @@ Most updates can be made directly on GitHub: open the file, select the pencil ic
 
 **For ordinary content updates, start with a data file.** You should not need to edit the JavaScript layout code to add a project or change its instructions.
 
+## Appearance setting
+
+The site starts in **light mode**. Select **Dark mode** in the top-right header to switch the current browser to the dark palette. The setting is saved in that browser so it stays selected across page navigation and reloads. It is a local preference: it does not change the mode for other visitors. If browser storage is blocked, the site still works with light mode as the default.
+
 ## Change the colors or homepage
 
 Open `data/site-config.js`.
@@ -95,7 +99,15 @@ These fields are used to build the separate Design Process and Test & Troublesho
 
 Open `data/inventory.js`. This file is the inventory source of truth. The current 25 rows are explicitly marked as examples; their quantities, makers, and `DEMO` locations are not verified Baypath shop records. Replace or remove those rows before relying on the counts.
 
-The inventory page supports catalog search, category and storage-area filters, stock-status filters, sortable columns, 25/50/100/200-row pagination, and CSV export. Those controls only change the current browser view. To make a permanent stock change, edit `data/inventory.js` and commit the file to GitHub.
+The inventory page includes on-page help for search, categories, storage areas, stock status, sorting, resetting filters, and exporting. It supports 25/50/100/200-row pagination too. These controls only change the current browser view. To make a permanent stock change, edit `data/inventory.js` and commit the file to GitHub.
+
+### Pick the right category and location
+
+- **Category describes what the item is.** Examples already used in the sample data include Resistors, Capacitors, LEDs & Displays, Integrated Circuits, Connectors, Hand Tools, and Wires & Cables. Reuse an existing category label rather than making near-duplicates such as `LED`, `LEDs`, and `LED parts`.
+- **Storage area describes where it is kept.** Use a consistent room, lab, or named work area. Then record the cabinet, shelf/drawer, and bin in the `location` object. The storage-area filter uses the `area` value; the more detailed fields appear in the table and search.
+- **Quantity is the counted amount, with a unit.** For example, use `quantity: 120, unit: "pcs"` for 120 individual pieces. Choose a unit that matches how the stock is issued and counted.
+- **Unknown is not the same as zero.** Use `quantity: null` when no reliable count exists; the site marks that row as **Count needed**. Use `quantity: 0` only after confirming the item is out of stock.
+- **Minimum quantity is the restock threshold.** If the count is positive but at or below a positive `minimumQuantity`, the row is flagged as low stock. Set a realistic minimum for commonly used consumables; avoid treating a guess as a verified count.
 
 Each record can use these fields:
 
