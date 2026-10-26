@@ -1,29 +1,21 @@
 /*
   SITE CONFIGURATION
-  Change the homepage text and image paths here. Replace files inside assets/images/
-  whenever you want new visuals; keep the matching image path below up to date.
+  Change homepage wording and image paths here.
+  Replace assets/images/workshop-banner.svg with your own photo, or change heroImage
+  to a file you upload into assets/images/.
 */
 window.SHOP_CONFIG = {
-  brand: "WORKSHOP",
-  tagline: "SHOP CLASS HUB",
-  intro: "A better home for schematics, project ideas, class references, and the things you make.",
-  heroTitleTop: "Build skills.",
-  heroTitleAccent: "Make things.",
+  brand: "SHOP CLASS",
+  tagline: "BAYPATH RVTHS",
+  heroEyebrow: "BAYPATH REGIONAL VOCATIONAL TECHNICAL HIGH SCHOOL",
+  heroTitleTop: "SHOP CLASS",
+  heroTitleAccent: "Build skills. Make things.",
+  intro: "Your home for project builds, schematics, and useful shop references.",
   heroImage: "assets/images/workshop-banner.svg",
-  heroImageAlt: "Illustrated workshop bench with project plans and tools",
+  heroImageAlt: "Workshop bench illustration with plans and tools",
   homeCards: [
-    { eyebrow: "PLANS / DRAWINGS", title: "Schematics", description: "Project plans and technical drawings organized by grade and topic.", image: "assets/images/schematic.svg", imageAlt: "Technical plan on a blueprint grid", path: "/schematics", linkLabel: "Explore schematics" },
-    { eyebrow: "IDEAS / BUILDS", title: "Project gallery", description: "Collect finished projects, in-progress builds, and inspiration.", image: "assets/images/project.svg", imageAlt: "Wooden project on a workbench", path: "/projects", linkLabel: "Browse projects" },
-    { eyebrow: "SHARED KNOWLEDGE", title: "Common references", description: "Useful diagrams and notes that apply across grades.", image: "assets/images/resources.svg", imageAlt: "Reference notebook and drafting tools", path: "/schematics/common", linkLabel: "Open references" },
-    { eyebrow: "READY FOR THE SHOP", title: "Resources", description: "Create a reliable home for approved guides and class resources.", image: "assets/images/resources.svg", imageAlt: "Workshop tools neatly arranged", path: "/resources", linkLabel: "Browse resources" }
-  ],
-  feature: {
-    eyebrow: "A LIBRARY THAT GROWS",
-    title: "From first sketch to finished build.",
-    description: "Add drawings, photos, material lists, instructions, and helpful links as the semester moves along.",
-    image: "assets/images/project.svg",
-    imageAlt: "Project workbench illustration",
-    path: "/projects",
-    linkLabel: "Explore the project space"
-  }
+    { eyebrow: "PLANS / DRAWINGS", title: "Schematics", description: "Find drawings and diagrams, organized by grade and topic.", image: "assets/images/schematic.svg", imageAlt: "Technical schematic drawing", path: "/schematics", linkLabel: "Open schematics" },
+    { eyebrow: "BUILDS / DOCUMENTATION", title: "Projects", description: "Project pages with photos, plans, materials, and build steps.", image: "assets/images/project.svg", imageAlt: "Project on a workbench", path: "/projects", linkLabel: "View projects" },
+    { eyebrow: "SHARED REFERENCES", title: "Common", description: "Helpful references used across grades and projects.", image: "assets/images/resources.svg", imageAlt: "Workshop reference tools", path: "/schematics/common", linkLabel: "Open common" }
+  ]
 };
