@@ -5,8 +5,12 @@
   Replace or delete these records before relying on stock quantities or locations.
 
   To add an item, copy one object and give it a unique id and partNumber.
-  Keep quantity numeric, and use null if a count has not been verified.
-  Location is split into area / cabinet / shelf / bin so filters stay useful.
+  CATEGORY = what the item is. Reuse existing labels (e.g. Resistors, Capacitors,
+  LEDs & Displays, Integrated Circuits) to keep the category filter consistent.
+  LOCATION AREA = where the item is stored. Use area / cabinet / shelf / bin
+  to record a physical path from room to exact container.
+  Keep quantity numeric; use 0 only for confirmed empty stock, and null if the
+  count is unknown. Choose a clear unit (pcs, sets, reels, etc.) and restock minimum.
 */
 window.SHOP_INVENTORY = [
   {
