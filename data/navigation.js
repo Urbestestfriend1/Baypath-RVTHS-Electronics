@@ -1,7 +1,7 @@
 /*
   NAVIGATION TREE
   Add or rearrange sections here. Every path should have a matching data/pages.js entry,
-  except /projects which is backed by the catalog in data/projects.js.
+  /projects is backed by data/projects.js; /inventory is backed by data/inventory.js.
 */
 window.SHOP_NAVIGATION = [
   { label: "Home", path: "/", icon: "⌂" },
