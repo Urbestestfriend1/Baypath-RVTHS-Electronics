@@ -183,8 +183,8 @@
       : '<div class="empty-projects"><div><strong>The project shelf is empty for now.</strong><p>Project write-ups will appear here as the class collection grows.</p></div></div>';
     const countText = realCount + (realCount === 1 ? " PROJECT" : " PROJECTS");
     return '<div class="page-shell">' + breadcrumbs(path) +
-      '<header class="page-intro"><div><p class="eyebrow">PROJECT LIBRARY</p><h1>Projects</h1><p>Each build has its drawing, parts list, steps, and reference links together on one page.</p></div><span class="count-label">' + countText + '</span></header>' +
-      ready + callout({title:"Inside each project",text:"Look for the overview, schematic, materials and tools, build sequence, and supporting references. Check component pinouts and operating limits against the part datasheet."}) + '</div>';
+      '<header class="page-intro"><div><p class="eyebrow">PROJECT LIBRARY</p><h1>Projects</h1><p>Project pages separate the design plan, circuit drawing, parts, numbered build instructions, and test checklist.</p></div><span class="count-label">' + countText + '</span></header>' +
+      ready + callout({title:"Inside each project",text:"Start with the design process, then follow the build instructions in order. Use the verification checklist to test the result and the datasheets to confirm part ratings."}) + '</div>';
   }
 
   function bulletList(items, emptyText) {
@@ -198,24 +198,70 @@
     }).join("") + '</ul>';
   }
   function projectSteps(steps) {
-    if (!steps || !steps.length) return '<p class="muted-note">Build steps are not available for this project yet.</p>';
+    if (!steps || !steps.length) {
+      return '<div class="empty-state"><strong>Build instructions have not been added.</strong><p>Add step objects to the <code>steps</code> array in data/projects.js.</p></div>';
+    }
     return '<ol class="steps-list">' + steps.map((step, index) =>
-      '<li><span class="step-number">' + String(index + 1).padStart(2, "0") + '</span><div class="step-body"><h3>' +
-      esc(step.title || "Step " + (index + 1)) + '</h3><p>' + esc(step.description || "") + '</p>' +
+      '<li class="build-step"><span class="step-number">' + String(index + 1).padStart(2, "0") + '</span><div class="step-body">' +
+      '<p class="step-kicker">BUILD STEP ' + String(index + 1).padStart(2, "0") + '</p><h3>' +
+      esc(step.title || "Step " + (index + 1)) + '</h3><p class="step-instructions">' + esc(step.description || "") + '</p>' +
+      ((step.why || step.check) ? '<div class="step-guidance">' +
+        (step.why ? '<div class="step-guidance-item"><span>WHY IT MATTERS</span><p>' + esc(step.why) + '</p></div>' : '') +
+        (step.check ? '<div class="step-guidance-item step-check"><span>CHECK BEFORE MOVING ON</span><p>' + esc(step.check) + '</p></div>' : '') +
+        '</div>' : '') +
       (step.image ? '<img src="' + esc(step.image) + '" alt="' + esc(step.imageAlt || step.title || "") + '" loading="lazy">' : "") +
       '</div></li>').join("") + '</ol>';
   }
+
+  function projectDesignProcess(items) {
+    if (!items || !items.length) {
+      items = [
+        { title: "Define the goal", description: "Write down what the finished project should do and the constraints it must meet." },
+        { title: "Plan the design", description: "Choose a circuit or construction approach and record the important connections." },
+        { title: "Review the parts", description: "Check ratings, dimensions, pinouts, polarity, and the tools required." },
+        { title: "Build and verify", description: "Prototype carefully, test the result, and revise the design if needed." }
+      ];
+    }
+    return '<div class="process-grid">' + items.map((item, index) =>
+      '<article class="process-card"><div class="process-card-top"><span>' + String(index + 1).padStart(2, "0") + '</span><span class="process-card-line"></span></div>' +
+      '<h3>' + esc(item.title || "Design stage " + (index + 1)) + '</h3><p>' + esc(item.description || "") + '</p></article>'
+    ).join("") + '</div>';
+  }
+
+  function projectVerification(items) {
+    if (!items || !items.length) {
+      return '<div class="empty-state"><strong>Verification checks have not been added.</strong><p>Add a <code>verification</code> array in data/projects.js to explain the expected result and how to measure it.</p></div>';
+    }
+    return '<div class="verification-list">' + items.map((item, index) =>
+      '<article class="verification-item"><span class="verification-icon">' + String(index + 1).padStart(2, "0") + '</span><div><h3>' +
+      esc(item.title || "Check " + (index + 1)) + '</h3><p>' + esc(item.description || "") + '</p></div></article>'
+    ).join("") + '</div>';
+  }
+
+  function projectTroubleshooting(items) {
+    if (!items || !items.length) {
+      return '<div class="empty-state"><strong>No troubleshooting notes yet.</strong><p>Add problem, cause, and fix entries to the <code>troubleshooting</code> array in data/projects.js.</p></div>';
+    }
+    return '<div class="troubleshooting-list">' + items.map(item =>
+      '<article class="troubleshooting-item"><h3>' + esc(item.problem || "Problem to check") + '</h3>' +
+      (item.cause ? '<p><span>Possible cause</span>' + esc(item.cause) + '</p>' : '') +
+      (item.fix ? '<p><span>What to try</span>' + esc(item.fix) + '</p>' : '') +
+      '</article>'
+    ).join("") + '</div>';
+  }
+
   function projectGalleryImages(gallery) {
     if (!gallery || !gallery.length) return '<p class="muted-note">No gallery photos are available for this project yet.</p>';
     return '<div class="photo-gallery">' + gallery.map(photo =>
       '<figure><a href="' + esc(photo.image) + '" target="_blank" rel="noopener"><img src="' + esc(photo.image) + '" alt="' + esc(photo.alt || "") + '" loading="lazy"></a>' +
       (photo.caption ? '<figcaption>' + esc(photo.caption) + '</figcaption>' : "") + '</figure>').join("") + '</div>';
   }
+
   function projectFiles(files) {
-    if (!files || !files.length) return '<p class="muted-note">No downloadable files are listed for this project yet.</p>';
+    if (!files || !files.length) return '<p class="muted-note">No datasheets or external references have been added yet.</p>';
     return '<div class="file-list">' + files.map(file =>
-      '<a class="file-row" href="' + esc(file.href || "#") + '" target="_blank" rel="noopener"><span class="file-icon">↧</span>' +
-      '<span class="file-copy"><strong>' + esc(file.label || "Project file") + '</strong><small>' + esc(file.description || "") + '</small></span><span class="file-arrow">↗</span></a>'
+      '<a class="file-row" href="' + esc(file.href || "#") + '" target="_blank" rel="noopener"><span class="file-icon">↗</span>' +
+      '<span class="file-copy"><strong>' + esc(file.label || "Project reference") + '</strong><small>' + esc(file.description || "") + '</small></span><span class="file-arrow">↗</span></a>'
     ).join("") + '</div>';
   }
 
@@ -223,30 +269,59 @@
     const image = project.featuredImage || "assets/images/project.svg";
     const schematic = project.schematicImage || "";
     const facts = (project.facts || []).length
-      ? '<div class="project-facts">' + project.facts.map(fact => '<div class="project-fact"><span>' + esc(fact.label) + '</span><strong>' + esc(fact.value) + '</strong></div>').join("") + '</div>'
+      ? '<div class="project-facts">' + project.facts.map(fact =>
+          '<div class="project-fact"><span>' + esc(fact.label) + '</span><strong>' + esc(fact.value) + '</strong></div>'
+        ).join("") + '</div>'
       : "";
     const principle = project.principle
-      ? '<section class="detail-section"><div class="detail-heading"><span>02</span><h2>' + esc(project.principle.title || "How it works") + '</h2></div><div class="principle-panel"><p>' + esc(project.principle.text || "") + '</p>' +
-        (project.principle.formula ? '<code>' + esc(project.principle.formula) + '</code>' : "") + '</div></section>'
+      ? '<aside class="principle-panel"><p class="principle-label">THE CORE IDEA</p><h3>' + esc(project.principle.title || "How it works") + '</h3><p>' + esc(project.principle.text || "") + '</p>' +
+        (project.principle.formula ? '<code>' + esc(project.principle.formula) + '</code>' : "") + '</aside>'
       : "";
-    const notice = project.template ? callout({title:"Project template",text:"A reusable project-page layout."},"template-notice") : "";
+    const objectives = (project.objectives && project.objectives.length)
+      ? '<div class="learning-panel"><h3>What you will learn</h3>' + bulletList(project.objectives, "Learning goals have not been listed.") + '</div>'
+      : "";
+    const notice = project.template ? callout({title:"Project template",text:"A reusable project-page layout. Replace the example text and arrays in data/projects.js."},"template-notice") : "";
+    const navLinks = [
+      ["brief","Project brief"],["design-process","Design process"],["schematic","Schematic"],
+      ["materials","Parts & tools"],["build-steps","Build steps"],["verification","Test & troubleshoot"],
+      ["references","References"],["gallery","Gallery"]
+    ];
     return '<div class="page-shell project-page">' + breadcrumbs(path, project) + notice +
-      '<header class="page-intro project-intro"><div><p class="eyebrow">' + esc(project.grade || "SHOP PROJECT") + ' / ' + esc(project.category || "BUILD") + '</p><h1>' + esc(project.title) + '</h1><p>' + esc(project.summary || "") + '</p>' +
-      '<div class="project-tags"><span>' + esc(project.status || "Project") + '</span><span>' + esc(project.grade || "General") + '</span><span>' + esc(project.category || "Build") + '</span></div></div>' +
-      '<img class="project-cover" src="' + esc(image) + '" alt="' + esc(project.featuredImageAlt || project.title) + '"></header>' + facts +
-      '<section class="detail-section"><div class="detail-heading"><span>01</span><h2>Overview</h2></div><div class="detail-copy"><p>' + esc(project.description || "Project details are not available yet.") + '</p>' +
-      ((project.objectives && project.objectives.length) ? '<h3>What you will learn</h3>' + bulletList(project.objectives, "Learning objectives are not listed.") : "") + '</div></section>' + principle +
-      '<section class="detail-section"><div class="detail-heading"><span>03</span><h2>Schematic & references</h2></div><div class="detail-two-column">' +
-      (schematic ? '<a class="schematic-preview" href="' + esc(schematic) + '" target="_blank" rel="noopener"><img src="' + esc(schematic) + '" alt="' + esc(project.schematicAlt || "Project schematic") + '" loading="lazy"><span>View full-size schematic ↗</span></a>' :
-      '<div class="schematic-placeholder">A schematic is not available for this project yet.</div>') +
-      '<div class="detail-panel"><h3>Datasheets and links</h3>' + projectFiles(project.files) + '</div></div></section>' +
-      '<section class="detail-section"><div class="detail-heading"><span>04</span><h2>Materials & tools</h2></div><div class="requirements-grid">' +
-      '<div class="detail-panel"><h3>Materials / parts</h3>' + bulletList(project.materials,"A materials list is not available yet.") + '</div>' +
-      '<div class="detail-panel"><h3>Tools / equipment</h3>' + bulletList(project.tools,"A tool list is not available yet.") + '</div></div></section>' +
-      '<section class="detail-section"><div class="detail-heading"><span>05</span><h2>Build sequence</h2></div>' + projectSteps(project.steps) + '</section>' +
-      '<section class="detail-section"><div class="detail-heading"><span>06</span><h2>Project gallery</h2></div>' + projectGalleryImages(project.gallery) + '</section>' +
-      (project.notes ? '<section class="detail-section"><div class="detail-heading"><span>07</span><h2>Notes</h2></div><div class="detail-copy"><p>' + esc(project.notes) + '</p></div></section>' : "") +
-      '<div class="return-row"><a class="button button-outline" href="#/projects">← Back to projects</a></div></div>';
+      '<header class="project-hero"><div class="project-hero-copy"><p class="eyebrow">' + esc(project.grade || "SHOP PROJECT") + ' / ' + esc(project.category || "BUILD") + '</p>' +
+      '<h1>' + esc(project.title) + '</h1><p class="project-summary">' + esc(project.summary || "") + '</p>' +
+      '<div class="project-tags"><span>' + esc(project.status || "Project") + '</span><span>' + esc(project.grade || "General") + '</span><span>' + esc(project.category || "Build") + '</span></div>' +
+      '<a class="button button-accent project-start-link" href="#build-steps">Go to build instructions <span>↓</span></a></div>' +
+      '<div class="project-hero-image"><img class="project-cover" src="' + esc(image) + '" alt="' + esc(project.featuredImageAlt || project.title) + '"><span class="image-corner-label">PROJECT FILE / ' + esc(project.slug.toUpperCase()) + '</span></div></header>' +
+      facts +
+      '<div class="project-roadmap"><div class="roadmap-heading"><span class="roadmap-pulse"></span><span>HOW TO USE THIS PAGE</span><small>PLAN → BUILD → CHECK</small></div>' +
+      '<nav class="project-jump-nav" aria-label="Jump to project section">' + navLinks.map((link,index) =>
+        '<a href="#' + link[0] + '"><span>' + String(index + 1).padStart(2, "0") + '</span>' + link[1] + '</a>'
+      ).join("") + '</nav></div>' +
+      '<section class="project-section" id="brief"><div class="project-section-heading"><span class="section-num">01</span><div><p class="section-overline">START HERE</p><h2>Project brief</h2><p>Understand what you are making before touching the parts.</p></div></div>' +
+      '<div class="brief-grid"><div class="project-description"><p>' + esc(project.description || "Project details have not been added yet.") + '</p>' + objectives + '</div>' + principle + '</div></section>' +
+      '<section class="project-section" id="design-process"><div class="project-section-heading"><span class="section-num">02</span><div><p class="section-overline">THINK IT THROUGH</p><h2>Design process</h2><p>The decisions to make before the physical build begins.</p></div></div>' +
+      projectDesignProcess(project.designProcess) + '<p class="section-hint">Use this section to explain the reasoning and planning. The numbered build instructions below cover the actual assembly.</p></section>' +
+      '<section class="project-section" id="schematic"><div class="project-section-heading"><span class="section-num">03</span><div><p class="section-overline">READ THE DRAWING</p><h2>Schematic</h2><p>Use the diagram as the connection map while you work.</p></div></div>' +
+      '<div class="schematic-layout">' + (schematic
+        ? '<a class="schematic-preview" href="' + esc(schematic) + '" target="_blank" rel="noopener"><img src="' + esc(schematic) + '" alt="' + esc(project.schematicAlt || "Project schematic") + '" loading="lazy"><span>Open full-size schematic ↗</span></a>'
+        : '<div class="schematic-placeholder">A schematic has not been added to this project yet.</div>') +
+      '<aside class="diagram-notes"><h3>How to use the drawing</h3><p>Follow one connection at a time. Match component labels and values, and trace each path to its power rail or ground.</p><p>Do not power the circuit while you are still moving wires or checking connections.</p></aside></div></section>' +
+      '<section class="project-section" id="materials"><div class="project-section-heading"><span class="section-num">04</span><div><p class="section-overline">GET READY</p><h2>Parts & tools</h2><p>Collect the listed components before you start wiring.</p></div></div>' +
+      '<div class="requirements-grid"><div class="detail-panel"><div class="panel-heading"><span class="panel-icon">01</span><h3>Materials / parts</h3></div>' +
+      bulletList(project.materials,"No parts list has been added yet.") + '</div><div class="detail-panel"><div class="panel-heading"><span class="panel-icon">02</span><h3>Tools / equipment</h3></div>' +
+      bulletList(project.tools,"No tool list has been added yet.") + '</div></div></section>' +
+      '<section class="project-section project-build-section" id="build-steps"><div class="project-section-heading"><span class="section-num">05</span><div><p class="section-overline">ASSEMBLE IN ORDER</p><h2>Build instructions</h2><p>Complete each step, then use its check to confirm the circuit is ready for the next one.</p></div></div>' +
+      '<div class="build-safety-note"><span class="safety-note-icon">!</span><p><strong>Before you change a connection:</strong> disconnect the power supply. For these examples, use low-voltage DC only.</p></div>' +
+      projectSteps(project.steps) + '</section>' +
+      '<section class="project-section" id="verification"><div class="project-section-heading"><span class="section-num">06</span><div><p class="section-overline">PROVE IT WORKS</p><h2>Test & troubleshoot</h2><p>Compare your result with the expected behavior before changing the design.</p></div></div>' +
+      '<div class="verification-panel"><div class="verification-heading"><span>✓</span><div><h3>Verification checklist</h3><p>What should happen and what to measure.</p></div></div>' + projectVerification(project.verification) + '</div>' +
+      '<div class="troubleshooting-heading"><h3>Something is not working?</h3><p>Disconnect power first, then check one possible cause at a time.</p></div>' +
+      projectTroubleshooting(project.troubleshooting) + '</section>' +
+      '<section class="project-section" id="references"><div class="project-section-heading"><span class="section-num">07</span><div><p class="section-overline">LOOK UP THE DETAILS</p><h2>References & datasheets</h2><p>Use manufacturer documents to confirm the exact part ratings and pinout.</p></div></div>' +
+      '<div class="detail-panel references-panel">' + projectFiles(project.files) + '</div></section>' +
+      '<section class="project-section" id="gallery"><div class="project-section-heading"><span class="section-num">08</span><div><p class="section-overline">VISUAL NOTES</p><h2>Project gallery</h2><p>Diagrams, photos, and supporting visuals.</p></div></div>' + projectGalleryImages(project.gallery) + '</section>' +
+      (project.notes ? '<aside class="project-notes"><span class="note-mark">i</span><div><strong>Notes & limitations</strong><p>' + esc(project.notes) + '</p></div></aside>' : "") +
+      '<div class="return-row"><a class="button button-outline" href="#/projects">← Back to projects</a><a class="text-link" href="#/projects">Browse another project ↗</a></div></div>';
   }
 
   function renderPage(path) {
