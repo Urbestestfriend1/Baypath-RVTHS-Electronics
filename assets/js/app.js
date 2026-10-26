@@ -152,7 +152,7 @@
     const mainProjects = featured.length ? featured.slice(0, 2) : realProjects.slice(0, 2);
     const projectBlock = mainProjects.length
       ? '<div class="project-grid compact-project-grid">' + mainProjects.map(projectCard).join("") + '</div>'
-      : '<div class="empty-projects"><div><strong>Your project gallery starts here.</strong><p>Add a project in <code>data/projects.js</code> and it will appear here automatically.</p></div><a class="button button-outline" href="#/projects">Open project gallery →</a></div>';
+      : '<div class="empty-projects"><div><strong>Project notes are being collected.</strong><p>Browse the gallery for the current circuit examples and build references.</p></div><a class="button button-outline" href="#/projects">Open project gallery →</a></div>';
     const grades = [
       { label: "Freshman", path: "/schematics/freshman" },
       { label: "Sophomore", path: "/schematics/sophomore" },
@@ -173,17 +173,18 @@
       '<aside class="home-rail"><section class="rail-panel"><div class="rail-heading"><span>QUICK LINKS</span><b>⌁</b></div>' + quickLinks + '</section>' +
       '<section class="rail-panel"><div class="rail-heading"><span>SCHEMATICS BY GRADE</span><b>＋</b></div>' +
       grades.map((grade, index) => '<a class="grade-link" href="' + href(grade.path) + '"><span class="grade-number">0' + (index + 1) + '</span><span>' + esc(grade.label) + '</span><b>→</b></a>').join("") +
-      '</section><div class="rail-note"><span class="note-mark">i</span><p>Need to update a section? Start in <code>data/</code>. The editing guide explains what to change.</p><a href="https://github.com/Urbestestfriend1/Baypath-RVTHS-Electronics/blob/main/EDITING-GUIDE.md" target="_blank" rel="noopener">Open editing guide ↗</a></div></aside></div>';
+      '</section><div class="rail-note"><span class="note-mark">!</span><p>Before powering a circuit, check component polarity and confirm the supply voltage matches the design.</p></div></aside></div>';
   }
 
   function renderProjectGallery(path) {
     const realCount = projects.filter(p => !p.template).length;
-    const ready = projects.length ? '<div class="project-grid">' + projects.map(projectCard).join("") + '</div>' :
-      '<div class="empty-projects"><div><strong>No projects have been added yet.</strong><p>Copy the example object in <code>data/projects.js</code>, then replace its title, images, and details.</p></div></div>';
-    const countText = realCount === 0 ? "STARTER TEMPLATE BELOW" : realCount + (realCount === 1 ? " PROJECT" : " PROJECTS");
+    const ready = projects.length
+      ? '<div class="project-grid">' + projects.map(projectCard).join("") + '</div>'
+      : '<div class="empty-projects"><div><strong>The project shelf is empty for now.</strong><p>Project write-ups will appear here as the class collection grows.</p></div></div>';
+    const countText = realCount + (realCount === 1 ? " PROJECT" : " PROJECTS");
     return '<div class="page-shell">' + breadcrumbs(path) +
-      '<header class="page-intro"><div><p class="eyebrow">PROJECT LIBRARY</p><h1>Projects</h1><p>Each project uses the same page layout, so every build is documented in a familiar way.</p></div><span class="count-label">' + countText + '</span></header>' +
-      ready + callout({title:"Add a project",text:"Open data/projects.js, copy the sample project object, and change its slug, description, pictures, schematic, parts, tools, and steps. No layout code needs to be changed."}) + '</div>';
+      '<header class="page-intro"><div><p class="eyebrow">PROJECT LIBRARY</p><h1>Projects</h1><p>Each build has its drawing, parts list, steps, and reference links together on one page.</p></div><span class="count-label">' + countText + '</span></header>' +
+      ready + callout({title:"Inside each project",text:"Look for the overview, schematic, materials and tools, build sequence, and supporting references. Check component pinouts and operating limits against the part datasheet."}) + '</div>';
   }
 
   function bulletList(items, emptyText) {
@@ -205,13 +206,13 @@
       '</div></li>').join("") + '</ol>';
   }
   function projectGalleryImages(gallery) {
-    if (!gallery || !gallery.length) return '<p class="muted-note">Add project photos to the gallery array in data/projects.js.</p>';
+    if (!gallery || !gallery.length) return '<p class="muted-note">No gallery photos are available for this project yet.</p>';
     return '<div class="photo-gallery">' + gallery.map(photo =>
       '<figure><a href="' + esc(photo.image) + '" target="_blank" rel="noopener"><img src="' + esc(photo.image) + '" alt="' + esc(photo.alt || "") + '" loading="lazy"></a>' +
       (photo.caption ? '<figcaption>' + esc(photo.caption) + '</figcaption>' : "") + '</figure>').join("") + '</div>';
   }
   function projectFiles(files) {
-    if (!files || !files.length) return '<p class="muted-note">Add downloadable drawings or documents in data/projects.js.</p>';
+    if (!files || !files.length) return '<p class="muted-note">No downloadable files are listed for this project yet.</p>';
     return '<div class="file-list">' + files.map(file =>
       '<a class="file-row" href="' + esc(file.href || "#") + '" target="_blank" rel="noopener"><span class="file-icon">↧</span>' +
       '<span class="file-copy"><strong>' + esc(file.label || "Project file") + '</strong><small>' + esc(file.description || "") + '</small></span><span class="file-arrow">↗</span></a>'
@@ -221,32 +222,39 @@
   function renderProjectDetail(project, path) {
     const image = project.featuredImage || "assets/images/project.svg";
     const schematic = project.schematicImage || "";
-    return '<div class="page-shell project-page">' + breadcrumbs(path, project) +
-      (project.template ? callout({title:"Project template",text:"This is the starter entry. Edit it or copy it in data/projects.js, replace the sample content and images, and change template to false when it becomes a real project."},"template-notice") : "") +
+    const facts = (project.facts || []).length
+      ? '<div class="project-facts">' + project.facts.map(fact => '<div class="project-fact"><span>' + esc(fact.label) + '</span><strong>' + esc(fact.value) + '</strong></div>').join("") + '</div>'
+      : "";
+    const principle = project.principle
+      ? '<section class="detail-section"><div class="detail-heading"><span>02</span><h2>' + esc(project.principle.title || "How it works") + '</h2></div><div class="principle-panel"><p>' + esc(project.principle.text || "") + '</p>' +
+        (project.principle.formula ? '<code>' + esc(project.principle.formula) + '</code>' : "") + '</div></section>'
+      : "";
+    const notice = project.template ? callout({title:"Project template",text:"A reusable project-page layout."},"template-notice") : "";
+    return '<div class="page-shell project-page">' + breadcrumbs(path, project) + notice +
       '<header class="page-intro project-intro"><div><p class="eyebrow">' + esc(project.grade || "SHOP PROJECT") + ' / ' + esc(project.category || "BUILD") + '</p><h1>' + esc(project.title) + '</h1><p>' + esc(project.summary || "") + '</p>' +
-      '<div class="project-tags"><span>' + esc(project.status || "Project") + '</span><span>' + esc(project.grade || "Grade not set") + '</span><span>' + esc(project.category || "Category not set") + '</span></div></div>' +
-      '<img class="project-cover" src="' + esc(image) + '" alt="' + esc(project.featuredImageAlt || project.title) + '"></header>' +
-      '<section class="detail-section"><div class="detail-heading"><span>01</span><h2>Overview</h2></div><div class="detail-copy"><p>' + esc(project.description || "Add a project overview in data/projects.js.") + '</p>' +
-      ((project.objectives && project.objectives.length) ? '<h3>Goals and learning objectives</h3>' + bulletList(project.objectives) : "") + '</div></section>' +
-      '<section class="detail-section"><div class="detail-heading"><span>02</span><h2>Schematic & files</h2></div><div class="detail-two-column">' +
-      (schematic ? '<a class="schematic-preview" href="' + esc(schematic) + '" target="_blank" rel="noopener"><img src="' + esc(schematic) + '" alt="' + esc(project.schematicAlt || "Project schematic") + '" loading="lazy"><span>Open full-size schematic ↗</span></a>' :
-      '<div class="schematic-placeholder">Add a schematicImage path in data/projects.js.</div>') +
-      '<div class="detail-panel"><h3>Downloads and references</h3>' + projectFiles(project.files) + '</div></div></section>' +
-      '<section class="detail-section"><div class="detail-heading"><span>03</span><h2>Materials & tools</h2></div><div class="requirements-grid">' +
-      '<div class="detail-panel"><h3>Materials / parts</h3>' + bulletList(project.materials,"Add materials and quantities in data/projects.js.") + '</div>' +
-      '<div class="detail-panel"><h3>Tools / equipment</h3>' + bulletList(project.tools,"Add the tools required for the build.") + '</div></div></section>' +
-      '<section class="detail-section"><div class="detail-heading"><span>04</span><h2>Build steps</h2></div>' + projectSteps(project.steps) + '</section>' +
-      '<section class="detail-section"><div class="detail-heading"><span>05</span><h2>Gallery</h2></div>' + projectGalleryImages(project.gallery) + '</section>' +
-      (project.notes ? '<section class="detail-section"><div class="detail-heading"><span>06</span><h2>Notes</h2></div><div class="detail-copy"><p>' + esc(project.notes) + '</p></div></section>' : "") +
+      '<div class="project-tags"><span>' + esc(project.status || "Project") + '</span><span>' + esc(project.grade || "General") + '</span><span>' + esc(project.category || "Build") + '</span></div></div>' +
+      '<img class="project-cover" src="' + esc(image) + '" alt="' + esc(project.featuredImageAlt || project.title) + '"></header>' + facts +
+      '<section class="detail-section"><div class="detail-heading"><span>01</span><h2>Overview</h2></div><div class="detail-copy"><p>' + esc(project.description || "Project details are not available yet.") + '</p>' +
+      ((project.objectives && project.objectives.length) ? '<h3>What you will learn</h3>' + bulletList(project.objectives, "Learning objectives are not listed.") : "") + '</div></section>' + principle +
+      '<section class="detail-section"><div class="detail-heading"><span>03</span><h2>Schematic & references</h2></div><div class="detail-two-column">' +
+      (schematic ? '<a class="schematic-preview" href="' + esc(schematic) + '" target="_blank" rel="noopener"><img src="' + esc(schematic) + '" alt="' + esc(project.schematicAlt || "Project schematic") + '" loading="lazy"><span>View full-size schematic ↗</span></a>' :
+      '<div class="schematic-placeholder">A schematic is not available for this project yet.</div>') +
+      '<div class="detail-panel"><h3>Datasheets and links</h3>' + projectFiles(project.files) + '</div></div></section>' +
+      '<section class="detail-section"><div class="detail-heading"><span>04</span><h2>Materials & tools</h2></div><div class="requirements-grid">' +
+      '<div class="detail-panel"><h3>Materials / parts</h3>' + bulletList(project.materials,"A materials list is not available yet.") + '</div>' +
+      '<div class="detail-panel"><h3>Tools / equipment</h3>' + bulletList(project.tools,"A tool list is not available yet.") + '</div></div></section>' +
+      '<section class="detail-section"><div class="detail-heading"><span>05</span><h2>Build sequence</h2></div>' + projectSteps(project.steps) + '</section>' +
+      '<section class="detail-section"><div class="detail-heading"><span>06</span><h2>Project gallery</h2></div>' + projectGalleryImages(project.gallery) + '</section>' +
+      (project.notes ? '<section class="detail-section"><div class="detail-heading"><span>07</span><h2>Notes</h2></div><div class="detail-copy"><p>' + esc(project.notes) + '</p></div></section>' : "") +
       '<div class="return-row"><a class="button button-outline" href="#/projects">← Back to projects</a></div></div>';
   }
 
   function renderPage(path) {
     if (path === "/projects") return renderProjectGallery(path);
     const page = pages[path];
-    if (!page) return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">404 / NOT FOUND</p><h1>Page not found</h1><p>Add this route in data/navigation.js and its content in data/pages.js.</p><a class="button button-outline" href="#/">Return home</a></div></header></div>';
+    if (!page) return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">404 / NOT FOUND</p><h1>Page not found</h1><p>This page is not available. Check the navigation or return to the home page.</p><a class="button button-outline" href="#/">Return home</a></div></header></div>';
     const content = sectionMarkup(page.sections) + childCards(path) + contentCards(page.cards) + callout(page.callout);
-    const empty = content ? "" : '<div class="empty-state"><strong>Ready for your content.</strong><p>Add text, images, cards, or downloadable files in <code>data/pages.js</code>.</p></div>';
+    const empty = content ? "" : '<div class="empty-state"><strong>This section is still taking shape.</strong><p>Class notes, drawings, and reference files will appear here when available.</p></div>';
     return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">' + esc(page.eyebrow || "SHOP CLASS LIBRARY") + '</p><h1>' +
       esc(page.title || (navItem(path) || {}).label || "Shop Class") + '</h1><p>' + esc(page.description || "") + '</p></div></header>' +
       '<div class="page-content">' + content + empty + '</div></div>';

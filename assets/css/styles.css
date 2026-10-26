@@ -259,3 +259,13 @@ img{display:block;max-width:100%}
   .footer-inner{flex-wrap:wrap;gap:8px;padding:12px 0}.footer-inner #footer-school{order:3;flex-basis:100%;border:0;padding:0}
   .footer-motto{margin-left:auto}
 }
+
+/* Project facts and circuit principle */
+.project-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0 4px}
+.project-fact{padding:9px 11px;border:1px solid var(--border);background:var(--surface)}
+.project-fact span{display:block;color:var(--dim);font:8px ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
+.project-fact strong{display:block;margin-top:4px;color:var(--text);font-size:12px;font-weight:650}
+.principle-panel{padding:14px 15px;background:var(--surface);border:1px solid var(--border)}
+.principle-panel p{margin:0;color:var(--muted);font-size:12px;line-height:1.8}
+.principle-panel code{display:inline-block;margin-top:10px;padding:7px 10px;max-width:100%;overflow-x:auto;background:var(--raised);border:1px solid var(--border);color:var(--text);font-size:11px;white-space:nowrap}
+@media(max-width:650px){.project-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}

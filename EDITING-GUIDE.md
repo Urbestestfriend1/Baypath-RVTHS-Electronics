@@ -1,39 +1,41 @@
-# Quick editing guide
+# Quick Editing Guide
 
-## Start here: `data/site-config.js`
+Most day-to-day edits are in these files. Open a file on GitHub, select the pencil icon, make the changes, then commit to `main`.
 
-This is the main customization file.
+## Customize the homepage
 
-- **Website title:** `brand` and `tagline`
-- **Colors:** the values under `theme`
-- **Homepage banner:** `heroImage`
-- **Homepage words:** `heroTitleTop`, `heroTitleAccent`, `intro`
-- **Homepage shortcut cards:** `homeCards`
-- **Quick links on the home page:** `quickLinks`
+Open `data/site-config.js`.
 
-## Add a picture
+- `brand` and `tagline` control the site name.
+- `theme` controls backgrounds, panels, borders, text, and accent color.
+- `heroImage` changes the full-width banner.
+- `heroTitleTop`, `heroTitleAccent`, and `intro` change the headline and introduction.
+- `homeCards` controls homepage shortcuts.
+- `quickLinks` controls links in the homepage side panel.
 
-Upload it into `assets/images/`. Then paste its path into the field you want to use, such as:
+For a local image, upload the file into `assets/images/`, then set its path:
 
 ```js
 heroImage: "assets/images/my-workshop-photo.jpg"
 ```
 
-For the banner, use a wide landscape photo.
+A wide landscape photo works best for the banner.
 
-## Add a project
+## Edit a project or create another one
 
-Open `data/projects.js`, copy the sample project object, and give it a new unique `slug`. Change the title, grade, category, summary, photos, schematic, materials, tools, instructions, gallery, and files. The project detail page is made automatically.
+Open `data/projects.js`. It contains three worked examples: a 555 timer LED flasher, a current-limited LED, and an NPN transistor switch.
 
-Set `featured: true` if you want the project shown on the homepage. Change `template: false` once the sample has become a real project.
+Copy a project object and change its `slug`, title, grade, category, summary, images, facts, principle, objectives, materials, tools, steps, gallery, files, and notes. Every slug must be unique and URL-friendly, e.g. `wooden-tool-tray`. Set `featured: true` to show it on the homepage. The detail page appears automatically at `#/projects/your-slug`.
 
-## Change tabs and pages
+## Change tabs and regular pages
 
-- Tabs and subtabs: `data/navigation.js`
-- Normal page text and images: `data/pages.js`
+- Tab structure: `data/navigation.js`
+- Regular page text/cards: `data/pages.js`
 
-New normal pages need both a navigation entry and a matching entry in `data/pages.js`. Project pages only need a project object.
+A regular page needs matching entries in both files. Project pages use the slug and need no entry in `data/pages.js`.
 
-## Publish
+## Add images and schematics
 
-Commit your edits to `main`. GitHub Pages republishes the site automatically. See `README.md` for examples and more detail.
+Upload images into `assets/images/`, then use that path in the relevant project or page object. JPG/WebP work well for photos; SVG/PNG work well for diagrams. PDFs can be linked from `assets/files/`.
+
+Changes publish after the commit is pushed and GitHub Pages finishes its deployment.

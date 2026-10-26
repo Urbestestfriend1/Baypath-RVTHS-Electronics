@@ -1,100 +1,103 @@
 /*
-  PAGE CONTENT
-  Navigation labels and hierarchy live in data/navigation.js.
-  The /projects route is rendered from data/projects.js using the reusable project template.
-  Add or edit text in this file; keep raw HTML out of content fields.
+  PAGE COPY
+  Navigation is managed in data/navigation.js. Project details come from data/projects.js.
 */
 window.SHOP_PAGES = {
   "/schematics": {
-    eyebrow: "DRAWINGS / PLANS / REFERENCES",
+    eyebrow: "DRAWINGS / CIRCUITS / PLANS",
     title: "Schematics",
-    description: "Technical drawings, wiring diagrams, and project plans, organized so the right reference is easy to find.",
-    sections: [{ heading: "Browse by grade", text: "Choose a grade for its project plans, or open Common for references shared across classes. Add approved PDFs, diagrams, and notes as you build out this library." }],
-    callout: { title: "Keep drawings easy to use", text: "Give each file a clear name and a short note about what it covers. Put shared references in Common instead of keeping duplicate copies." }
+    description: "Circuit diagrams and project drawings, grouped by class year and shared reference.",
+    sections: [{ heading: "Browse schematics", text: "Use the grade sections for class projects, or visit Common for circuits and references that are useful across the program." }],
+    cards: [
+      { title: "Common schematics", tag: "SHARED REFERENCE", description: "Circuit fundamentals and repeat-use examples, including the 555 timer.", image: "assets/images/schematic-555-timer.svg", imageAlt: "555 timer schematic", path: "/schematics/common", linkLabel: "View common circuits" }
+    ]
   },
   "/schematics/freshman": {
     eyebrow: "SCHEMATICS / FRESHMAN",
     title: "Freshman schematics",
-    description: "First-year drawings, project plans, and technical references.",
-    sections: [{ heading: "Freshman library", text: "Add freshman project plans, measurements, wiring diagrams, material lists, and notes that explain each drawing." }]
+    description: "Foundational drawings and circuit references for first-year work.",
+    sections: [{ heading: "First-year reference", text: "Simple circuits, component symbols, resistor values, and introductory diagrams belong here." }]
   },
   "/schematics/freshman/projects": {
     eyebrow: "SCHEMATICS / FRESHMAN / PROJECTS",
     title: "Freshman project schematics",
-    description: "Plans and supporting information for freshman projects.",
-    sections: [{ heading: "What belongs here?", text: "Add a schematic or drawing, a link to its project detail page, parts or materials, and any dimensions needed before building." }]
+    description: "Drawings for first-year projects, from basic circuits to hands-on build exercises.",
+    sections: [{ heading: "Project drawings", text: "Plans and circuit diagrams used alongside freshman project work." }]
   },
   "/schematics/sophomore": {
     eyebrow: "SCHEMATICS / SOPHOMORE",
     title: "Sophomore schematics",
-    description: "Second-year plans, project drawings, and technical reference material.",
-    sections: [{ heading: "Sophomore library", text: "Add drawings, downloadable plans, material lists, photos, and reference notes for sophomore work." }]
+    description: "Circuit plans and technical drawings for second-year work.",
+    sections: [{ heading: "Second-year reference", text: "A place for more involved circuits, subsystem diagrams, and project-specific drawings." }]
   },
   "/schematics/sophomore/projects": {
     eyebrow: "SCHEMATICS / SOPHOMORE / PROJECTS",
     title: "Sophomore project schematics",
-    description: "Plans and supporting information for sophomore projects.",
-    sections: [{ heading: "What belongs here?", text: "Add each project's main plan, supporting diagrams, materials, dimensions, and a link to its project page." }]
+    description: "Project drawings and supporting circuit references for sophomore work.",
+    sections: [{ heading: "Project drawings", text: "Plans, measurements, and supporting diagrams for second-year builds." }]
   },
   "/schematics/junior": {
     eyebrow: "SCHEMATICS / JUNIOR",
     title: "Junior schematics",
-    description: "Third-year drawings, advanced builds, and technical references.",
-    sections: [{ heading: "Junior library", text: "Add approved drawings, advanced project plans, material lists, and notes for junior projects." }]
+    description: "Advanced circuit diagrams and plans for third-year projects.",
+    sections: [{ heading: "Third-year reference", text: "Advanced diagrams, design references, and project documentation." }]
   },
   "/schematics/junior/projects": {
     eyebrow: "SCHEMATICS / JUNIOR / PROJECTS",
     title: "Junior project schematics",
-    description: "Plans and supporting information for junior projects.",
-    sections: [{ heading: "What belongs here?", text: "Add each project's main plan, supporting diagrams, materials, dimensions, and a link to its project page." }]
+    description: "Circuit plans and supporting drawings for junior projects.",
+    sections: [{ heading: "Project drawings", text: "Project schematics and technical notes for third-year builds." }]
   },
   "/schematics/senior": {
     eyebrow: "SCHEMATICS / SENIOR",
     title: "Senior schematics",
-    description: "Fourth-year plans, capstone work, and advanced technical references.",
-    sections: [{ heading: "Senior library", text: "Add drawings, capstone plans, material lists, photos, and useful reference notes." }]
+    description: "Capstone drawings, advanced circuit plans, and final-year project references.",
+    sections: [{ heading: "Fourth-year reference", text: "Capstone plans, detailed schematics, and documentation for larger projects." }]
   },
   "/schematics/senior/projects": {
     eyebrow: "SCHEMATICS / SENIOR / PROJECTS",
     title: "Senior project schematics",
-    description: "Plans and supporting information for senior projects.",
-    sections: [{ heading: "What belongs here?", text: "Add each project's main plan, supporting diagrams, materials, dimensions, and a link to its project page." }]
+    description: "Plans and documentation for senior and capstone builds.",
+    sections: [{ heading: "Project drawings", text: "Schematics and supporting engineering notes for senior projects." }]
   },
   "/schematics/common": {
-    eyebrow: "SCHEMATICS / SHARED LIBRARY",
-    title: "Common schematics",
-    description: "Reference drawings, symbols, charts, and technical notes that apply across grades.",
-    sections: [{ heading: "Shared reference shelf", text: "Use this for common symbols, measurement references, wiring conventions, and diagrams used in multiple projects." }],
-    callout: { title: "One source of truth", text: "If a reference applies to everyone, keep it here and link to it from other pages rather than uploading copies." }
+    eyebrow: "SCHEMATICS / SHARED REFERENCE",
+    title: "Common circuits",
+    description: "A small library of useful circuits that come up across electronics projects.",
+    sections: [{ heading: "Circuit examples", text: "These reference builds cover timing, current limiting, and transistor switching. Each page includes a schematic, parts list, build sequence, and notes on what to measure." }],
+    cards: [
+      { title: "555 Timer LED Flasher", tag: "TIMING CIRCUITS", description: "An astable 555 timer produces a repeating output and blinks an LED.", image: "assets/images/cover-555-timer.svg", imageAlt: "555 timer LED flasher", path: "/projects/555-timer-led-flasher", linkLabel: "Open circuit" },
+      { title: "LED and Current-Limiting Resistor", tag: "CIRCUIT FUNDAMENTALS", description: "Use Ohm's law to estimate current in a simple series circuit.", image: "assets/images/cover-led-current.svg", imageAlt: "LED and current-limiting resistor circuit", path: "/projects/led-current-limiter", linkLabel: "Open circuit" },
+      { title: "NPN Transistor as a Switch", tag: "TRANSISTORS", description: "A small control current switches an LED load through an NPN transistor.", image: "assets/images/cover-transistor-switch.svg", imageAlt: "NPN transistor switch", path: "/projects/npn-transistor-switch", linkLabel: "Open circuit" }
+    ]
   },
   "/projects": {
     eyebrow: "PROJECT LIBRARY",
     title: "Projects",
-    description: "Every project has the same organized page structure: overview, featured image, schematic, materials, tools, build steps, gallery, and downloadable files."
+    description: "Build notes, circuit diagrams, parts, and test steps for projects used in the shop."
   },
   "/resources": {
-    eyebrow: "REFERENCE / PROCEDURES / SUPPORT",
+    eyebrow: "REFERENCE / CLASS MATERIAL",
     title: "Resources",
-    description: "Useful links, approved guides, and class references collected in one place.",
-    sections: [{ heading: "Resource library", text: "Use the subtabs for instructor-approved safety information, tool guides, procedures, and other shared material." }]
+    description: "Useful class references, equipment information, and shared documents.",
+    sections: [{ heading: "Class references", text: "General shop information, safety material, and tool references in one place." }]
   },
   "/resources/safety": {
     eyebrow: "RESOURCES / SAFETY",
     title: "Shop safety",
-    description: "A clear location for teacher-approved safety procedures, reminders, and class documents.",
-    sections: [{ heading: "Use official class guidance", text: "Add your teacher's safety rules, PPE requirements, and official procedures. Always follow your instructor's directions and posted shop rules." }],
-    callout: { title: "Safety first", text: "This page is a place to organize official material, not a replacement for training, supervision, or machine-specific instructions." }
+    description: "Safety material and class procedures for work in the shop.",
+    sections: [{ heading: "Follow the shop rules", text: "Use the official safety handouts, posted procedures, and your instructor's guidance whenever you work with tools, machines, or electrical equipment." }]
   },
   "/resources/tools": {
     eyebrow: "RESOURCES / TOOLS & EQUIPMENT",
     title: "Tools & equipment",
-    description: "Tool references, identification guides, and approved use notes in one location.",
-    sections: [{ heading: "Build the tool index", text: "Add tool names, photos, intended uses, PPE reminders, and links to approved operating instructions." }]
+    description: "Notes and references for the tools and equipment used in class.",
+    sections: [{ heading: "Equipment reference", text: "Tool names, setup notes, and manufacturer instructions can be collected here so they are easy to find when needed." }]
   },
   "/about": {
-    eyebrow: "ABOUT THIS SITE",
-    title: "About Shop Class Hub",
-    description: "A practical, editable reference site for schematics, projects, and class resources.",
-    sections: [{ heading: "Designed to be maintained", text: "The navigation, page content, project data, styling, scripts, and images are all kept in separate files. You can update sections without rebuilding the entire site." }]
+    eyebrow: "ABOUT",
+    title: "Shop Class",
+    description: "A shared reference for the projects, circuit diagrams, and skills covered in the shop.",
+    sections: [{ heading: "How it is organized", text: "Class schematics are grouped by year, common circuits have their own shared shelf, and each project follows the same layout so its parts, drawing, and build notes are easy to find." }]
   }
 };

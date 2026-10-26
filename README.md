@@ -1,86 +1,44 @@
-# Shop Class Hub — editing guide
+# Shop Class Hub
 
-A dark, compact, modular website for Baypath RVTHS. It is a static website hosted with GitHub Pages; there is no build step.
+A modular static site for Baypath RVTHS. GitHub Pages serves it directly; no build step or package manager is required.
 
-## The three files you will use most
+## Where to make changes
 
-| What you want to change | Open this file |
+| Task | File |
 |---|---|
-| Website name, colors, homepage text, banner image, homepage shortcut cards, quick links | `data/site-config.js` |
+| Site name, colors, banner, homepage cards, quick links | `data/site-config.js` |
 | Main tabs and subtabs | `data/navigation.js` |
-| Projects, project photos, schematic, parts list, tools, steps, gallery and downloads | `data/projects.js` |
-| Other page titles, text, images and sections | `data/pages.js` |
-| Layout and fonts | `assets/css/styles.css` (only for deeper design changes) |
+| Project descriptions, schematics, parts, steps, files | `data/projects.js` |
+| Other page copy and cards | `data/pages.js` |
+| Layout and visual styling | `assets/css/styles.css` |
 
-For most updates, you do **not** need to edit `index.html` or `assets/js/app.js`.
+## Project library
 
-## Change the banner or colors
+The gallery starts with three editable reference builds:
 
-Open `data/site-config.js`.
+- **555 Timer LED Flasher** — an astable timer circuit with a roughly one-second blink.
+- **LED and Current-Limiting Resistor** — LED polarity, series resistance, and Ohm's law.
+- **NPN Transistor as a Switch** — a low-side switch controlled by a pushbutton.
 
-- Change `heroImage` to an image path such as `assets/images/my-banner.jpg`, or a direct image URL.
-- Change `heroTitleTop`, `heroTitleAccent`, and `intro` to edit the homepage copy.
-- Under `theme`, edit `background`, `surface`, `raised`, `border`, `text`, `muted`, `dim`, and `accent`. Use hex colors such as `#191c1f`.
-- Edit the `homeCards` array to rename, reorder, add, or remove homepage shortcuts.
-- Edit `quickLinks` to update the right-side links on the homepage.
+Each object in `data/projects.js` defines the gallery card and detail page: main image, schematic, parts list, tools, build sequence, gallery, and links. Copy an object, choose a unique URL-friendly `slug`, then update its content. Project pages are generated automatically.
 
-For photos, upload the image into `assets/images/` and use that file path. Wide photos work best for the homepage banner.
+Upload local photos or diagrams to `assets/images/` and reference them with paths such as `assets/images/my-project.jpg`. PDFs can live in `assets/files/` and be linked from the project's `files` list.
 
-## Add or edit a project
+## Add a tab
 
-Open `data/projects.js`. Copy the sample project object and change at least:
+1. Add a route in `data/navigation.js`. Nested `children` arrays create subtabs.
+2. For a regular content page, add the same path in `data/pages.js`.
+3. Project detail routes are generated from the project's `slug` and do not need a separate page entry.
 
-1. `slug`: a unique URL-friendly name, like `wooden-tool-tray` (no spaces).
-2. `title`, `grade`, `category`, `summary`, and `description`.
-3. `featuredImage` and `featuredImageAlt`.
-4. `schematicImage` and `schematicAlt`.
-5. `objectives`, `materials`, `tools`, `steps`, `gallery`, `files`, and `notes`.
+## Customize appearance
 
-Upload project photos and drawings into `assets/images/` and point the fields to those paths. For PDFs, you can put files into an `assets/files/` folder and use the path in `files[].href`. Set `featured: true` to show a real project on the home page. When you turn the sample into an actual project, change `template: true` to `template: false`.
+Open `data/site-config.js` to adjust the theme colors, banner, homepage shortcuts, and quick links. Use `assets/css/styles.css` for deeper spacing, typography, or layout changes.
 
-The project page is generated automatically at `#/projects/your-slug`. You do not need to create a separate HTML page.
+## Publish
 
-## Add a new navigation tab or subtab
-
-1. Add an entry to `data/navigation.js`. Nested `children` arrays create subtabs.
-2. If it is a normal content page, add an entry with the same path in `data/pages.js`.
-3. Routes under `/projects/...` are created automatically from the project slug and do not need a separate page entry.
-
-Example navigation item:
-
-```js
-{ label: "Measurement charts", path: "/schematics/common/measurement-charts" }
-```
-
-Example content entry in `data/pages.js`:
-
-```js
-"/schematics/common/measurement-charts": {
-  eyebrow: "SCHEMATICS / COMMON",
-  title: "Measurement charts",
-  description: "Useful measurement references for the shop.",
-  sections: [
-    {
-      heading: "Quick reference",
-      text: "Add a short explanation.",
-      image: "assets/images/measurement-chart.png",
-      imageAlt: "Measurement chart"
-    }
-  ]
-}
-```
-
-## Save and publish changes
-
-1. Open the file in GitHub.
-2. Click the pencil icon to edit, or use **Add file → Upload files** to add pictures.
-3. Commit the changes to `main`.
-4. GitHub Pages publishes the changes automatically after its deployment finishes.
-
-Changes to page content and configuration normally need only a file edit and commit.
+Commit changes to `main`. GitHub Pages deploys them automatically after the build completes.
 
 ## Notes
 
-- All repository files and a public Pages site may be visible to anyone. Do not upload private student information or restricted class materials.
-- This is a static site. It can display pages, images, PDFs, and client-side features, but it does not provide private accounts or a secure database by itself.
-- Safety information should come from the official instructions supplied by the teacher.
+- This is a public static website. Do not upload private student information or restricted class files.
+- The example circuits use low-voltage DC. Check the exact component datasheets and follow the instructor's directions before powering a circuit.
