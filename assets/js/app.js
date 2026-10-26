@@ -282,7 +282,7 @@
       return quote(item[h]);
     }).join(","));
     const blob=new Blob(["\uFEFF",[headers.map(quote).join(","),...data].join("\r\n")],{type:"text/csv;charset=utf-8;"});
-    const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="shop-inventory-export.csv";
+    const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="electronics-inventory-export.csv";
     document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
   }
   function updateInventoryResults(){
@@ -307,7 +307,7 @@
     const categories=inventoryCategories(),areas=inventoryAreas(),isExample=inventory.length>0&&inventory.every(item=>item.recordType==="example");
     const low=inventory.filter(x=>inventoryStock(x).key==="low").length,out=inventory.filter(x=>inventoryStock(x).key==="out").length;
     return '<div class="page-shell inventory-page">'+breadcrumbs(path)+
-      '<header class="inventory-page-heading"><div><p class="eyebrow">SHOP SYSTEMS / MASTER CATALOG</p><h1>Inventory<span class="heading-period">.</span></h1>'+
+      '<header class="inventory-page-heading"><div><p class="eyebrow">INVENTORY / MASTER CATALOG</p><h1>Inventory<span class="heading-period">.</span></h1>'+
       '<p>A searchable, structured catalog for electronic components, wiring, hand tools, test equipment, consumables, and reusable shop assets. Search by the part you know, filter by where it lives, and sort the list to review quantities or identify records that need attention. As the catalog grows, filters narrow the full dataset while pagination keeps each view manageable.</p></div>'+
       '<div class="inventory-heading-side"><span class="inventory-heading-icon">▦</span><strong>MASTER STOCK LIST</strong><small>Part → Location → Quantity → Notes</small><a href="#inventory-catalog">Browse the catalog ↓</a></div></header>'+
       (isExample?'<aside class="inventory-demo-notice"><span class="demo-notice-icon">!</span><div><strong>Demonstration data — not verified Baypath stock</strong><p>The rows below are examples that show how the catalog works. Quantities, manufacturers, and storage locations are fictional sample values. Replace or remove these records in <code>data/inventory.js</code> before using the table to locate real parts or make purchasing decisions.</p></div></aside>':"")+
@@ -320,7 +320,7 @@
       '<div><strong>Search</strong><p>Type part of a name, part number, value, manufacturer, cabinet, shelf, bin, or note. Partial words work.</p></div>'+
       '<div><strong>Category = what it is</strong><p>Choose a type of item, such as Resistors, Capacitors, LEDs &amp; Displays, Integrated Circuits, or Wires &amp; Cables.</p></div>'+
       '<div><strong>Storage area = where it is</strong><p>Choose the room or area first. The table shows a more specific cabinet, drawer or shelf, and bin when recorded.</p></div>'+
-      '<div><strong>Stock status = what needs attention</strong><p>In stock means above the minimum. Low stock means the count is at or below the minimum but above zero. Out of stock means zero. Count needed means the quantity is unknown.</p></div></div><p class="inventory-help-footer">Click a table heading to sort. Use <strong>Reset filters</strong> to clear the search and filters. <strong>Export CSV</strong> downloads records that match your current filters; it does not change the website data.</p></section>'+
+      '<div><strong>Stock status = what needs attention</strong><p>In stock means a positive count that is not flagged low. Low stock means a positive count at or below a configured minimum. Out of stock means the count is zero. Count needed means no reliable quantity has been entered.</p></div></div><p class="inventory-help-footer">Click a table heading to sort. Use <strong>Reset filters</strong> to clear the search and filters. <strong>Export CSV</strong> downloads records that match your current filters; it does not change the website data.</p></section>'+
       '<div class="inventory-filter-grid"><label class="inventory-search-control"><span>Search items</span><div class="inventory-search-box"><span aria-hidden="true">⌕</span><input type="search" id="inventory-search" aria-label="Search inventory by name, part number, location, or notes" value="'+esc(inventoryState.query)+'" placeholder="Try “1 kΩ”, “LED”, or “Cabinet A”" autocomplete="off"><kbd>/</kbd></div></label>'+
       '<label><span>Category (item type)</span><select id="inventory-category" aria-label="Filter by item category">'+optionList(categories,inventoryState.category,"All categories")+'</select></label>'+
       '<label><span>Storage area (where it is)</span><select id="inventory-area" aria-label="Filter by storage area">'+optionList(areas,inventoryState.area,"All areas")+'</select></label>'+
