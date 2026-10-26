@@ -99,7 +99,10 @@
     if (project) {
       return '<nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a><span>/</span><a href="#/projects">Projects</a><span>/</span><span aria-current="page">' + esc(project.title) + '</span></nav>';
     }
-    const item = findItem(path, navData);
+    // Use the flattened navigation entries: those entries contain the full parent trail.
+    // The original tree nodes don't have a .trail property, which caused every interior
+    // page to throw an error while the homepage still appeared to work.
+    const item = allLinks.find(candidate => candidate.path === path);
     if (!item) return '<nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a><span>/</span><span>Page</span></nav>';
     const parts = item.trail.map((label, index) => {
       const entry = allLinks.find(candidate => candidate.trail.join("|") === item.trail.slice(0, index + 1).join("|"));
