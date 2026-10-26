@@ -1680,3 +1680,12 @@ a:hover .text-link,a:hover .project-card-link{color:#244b6b}
   .project-section-heading>div>p:last-child{font-size:13px}
   .step-instructions{font-size:13px}
 }
+
+
+/* Final navigation cleanup: show labels first, reduce decorative glyphs. */
+.site-sidebar .nav-icon,
+.site-sidebar .nav-count,
+.site-sidebar .nav-arrow,
+.workspace .search-symbol{display:none}
+.site-sidebar .top-nav a{gap:0}
+.workspace .site-search input{padding-left:12px}
