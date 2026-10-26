@@ -20,11 +20,11 @@ window.SHOP_NAVIGATION = [
     { label: "Senior", path: "/schematics/senior", children: [
       { label: "Projects", path: "/schematics/senior/projects" }
     ]},
-    { label: "Common", path: "/schematics/common" }
+    { label: "Common circuits", path: "/schematics/common" }
   ]},
   { label: "Resources", path: "/resources", icon: "⌁", children: [
-    { label: "Shop Safety", path: "/resources/safety" },
-    { label: "Tools & Equipment", path: "/resources/tools" }
+    { label: "Safety", path: "/resources/safety" },
+    { label: "Tools & equipment", path: "/resources/tools" }
   ]},
   { label: "About", path: "/about", icon: "i" }
 ];
