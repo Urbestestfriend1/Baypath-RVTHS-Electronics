@@ -5,12 +5,17 @@
   const navData = window.SHOP_NAVIGATION || [];
   const pages = window.SHOP_PAGES || {};
   const projects = window.SHOP_PROJECTS || [];
+  const inventory = window.SHOP_INVENTORY || [];
+  const inventoryState = { query: "", category: "all", area: "all", stock: "all", sortBy: "name", sortDir: "asc", page: 1, pageSize: 50 };
   const app = document.getElementById("app");
   const topNav = document.getElementById("top-nav");
   const contextNav = document.getElementById("context-nav");
   const search = document.getElementById("site-search");
   const results = document.getElementById("search-results");
   const menuButton = document.getElementById("menu-button");
+  const sidebar = document.getElementById("site-sidebar");
+  const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+  const sidebarClose = document.getElementById("sidebar-close");
   const flatNav = flatten(navData, []);
 
   function flatten(items, parents) {
@@ -54,7 +59,10 @@
   function renderTop(path) {
     const mainLinks = navData.filter(item => item.path === "/" || !item.path.includes("/", 1));
     topNav.innerHTML = mainLinks.map(item =>
-      '<a href="' + href(item.path) + '"' + (isActive(path, item.path) ? ' aria-current="page"' : "") + '>' + esc(item.label) + '</a>'
+      '<a href="' + href(item.path) + '"' + (isActive(path, item.path) ? ' aria-current="page"' : "") + '>' +
+      '<span class="nav-icon" aria-hidden="true">' + esc(item.icon || "•") + '</span><span class="nav-link-label">' + esc(item.label) + '</span>' +
+      (item.path === "/inventory" ? '<span class="nav-count">' + inventory.length + '</span>' : '') +
+      (item.path === "/projects" ? '<span class="nav-arrow">↗</span>' : '') + '</a>'
     ).join("");
   }
 
@@ -142,38 +150,44 @@
   }
 
   function renderHome() {
-    const cards = (cfg.homeCards || []).map(card =>
-      '<a class="shortcut" href="' + href(card.path) + '">' +
-      '<img src="' + esc(card.image) + '" alt="' + esc(card.imageAlt || "") + '" loading="lazy">' +
-      '<span class="shortcut-copy"><small>' + esc(card.eyebrow || "EXPLORE") + '</small><strong>' + esc(card.title) + '</strong><span>' + esc(card.description) + '</span><b>' + esc(card.linkLabel || "Open") + ' →</b></span></a>'
+    const exampleInventory = inventory.length && inventory.every(item => item.recordType === "example");
+    const inventoryDescription = exampleInventory
+      ? "A demonstration catalog showing how part numbers, categories, cabinet paths, minimum quantities, and notes can be organized. Replace the examples with verified shop records before using any quantities as a stock count."
+      : "Search the shop catalog by part number, name, category, storage area, quantity, or notes. Filter the full list instead of paging through one enormous document.";
+    const cards = (cfg.homeCards || []).map((card, index) =>
+      '<a class="library-card library-card-' + (index + 1) + '" href="' + href(card.path) + '">' +
+      '<div class="library-card-art"><img src="' + esc(card.image) + '" alt="' + esc(card.imageAlt || "") + '" loading="lazy"><span class="library-card-index">' + String(index + 1).padStart(2, "0") + '</span></div>' +
+      '<div class="library-card-copy"><span class="library-card-eyebrow">' + esc(card.eyebrow || "LIBRARY") + '</span><h3>' + esc(card.title) + '</h3><p>' + esc(card.path === "/inventory" ? inventoryDescription : card.description || "") + '</p><span class="library-card-link">' + esc(card.linkLabel || "Open section") + '<b>↗</b></span></div></a>'
     ).join("");
     const featured = projects.filter(project => project.featured && !project.template);
-    const realProjects = projects.filter(project => !project.template);
-    const mainProjects = featured.length ? featured.slice(0, 2) : realProjects.slice(0, 2);
-    const projectBlock = mainProjects.length
-      ? '<div class="project-grid compact-project-grid">' + mainProjects.map(projectCard).join("") + '</div>'
-      : '<div class="empty-projects"><div><strong>Project notes are being collected.</strong><p>Browse the gallery for the current circuit examples and build references.</p></div><a class="button button-outline" href="#/projects">Open project gallery →</a></div>';
-    const grades = [
-      { label: "Freshman", path: "/schematics/freshman" },
-      { label: "Sophomore", path: "/schematics/sophomore" },
-      { label: "Junior", path: "/schematics/junior" },
-      { label: "Senior", path: "/schematics/senior" },
-      { label: "Common", path: "/schematics/common" }
-    ];
-    const quickLinks = (cfg.quickLinks || []).map(link => '<a class="quick-link" href="' + href(link.path) + '"><span>' + esc(link.label) + '</span><b>→</b></a>').join("");
-    return '<section class="hero-banner"><img class="hero-banner-image" src="' + esc(cfg.heroImage || "assets/images/workshop-banner.svg") + '" alt="' + esc(cfg.heroImageAlt || "Workshop") + '">' +
-      '<div class="hero-banner-shade"></div><div class="hero-banner-inner"><p class="eyebrow">' + esc(cfg.heroEyebrow || cfg.schoolName || "SHOP CLASS") + '</p>' +
-      '<h1>' + esc(cfg.heroTitleTop || "SHOP CLASS") + '</h1><p class="hero-subtitle">' + esc(cfg.heroTitleAccent || "Build skills. Make things.") + '</p>' +
-      '<p class="hero-intro">' + esc(cfg.intro || "Projects, schematics, and shop resources.") + '</p>' +
-      '<a class="button button-accent" href="#/projects">Explore projects <span>→</span></a></div></section>' +
-      '<div class="home-layout"><div class="home-primary">' +
-      '<section class="home-section"><div class="section-heading"><div><span class="section-index">01</span><h2>Browse the library</h2></div><p>Start with a section or go straight to a reference.</p></div>' +
-      '<div class="shortcut-grid">' + cards + '</div></section>' +
-      '<section class="home-section"><div class="section-heading"><div><span class="section-index">02</span><h2>Projects</h2></div><a href="#/projects" class="section-link">View all projects →</a></div>' + projectBlock + '</section></div>' +
-      '<aside class="home-rail"><section class="rail-panel"><div class="rail-heading"><span>QUICK LINKS</span><b>⌁</b></div>' + quickLinks + '</section>' +
-      '<section class="rail-panel"><div class="rail-heading"><span>SCHEMATICS BY GRADE</span><b>＋</b></div>' +
-      grades.map((grade, index) => '<a class="grade-link" href="' + href(grade.path) + '"><span class="grade-number">0' + (index + 1) + '</span><span>' + esc(grade.label) + '</span><b>→</b></a>').join("") +
-      '</section><div class="rail-note"><span class="note-mark">!</span><p>Before powering a circuit, check component polarity and confirm the supply voltage matches the design.</p></div></aside></div>';
+    const displayProjects = (featured.length ? featured : projects.filter(project => !project.template)).slice(0, 2);
+    const featuredCards = displayProjects.length
+      ? '<div class="featured-projects">' + displayProjects.map(projectCard).join("") + '</div>'
+      : '<div class="empty-projects"><strong>The project shelf is ready for your first build.</strong><p>Add a project object in data/projects.js to give each build a home for its design, parts, instructions, and test results.</p></div>';
+    const exampleCount = inventory.length.toLocaleString("en-US");
+    const categoryCount = [...new Set(inventory.map(item => item.category).filter(Boolean))].length;
+    return '<div class="page-shell dashboard-page">' +
+      '<header class="dashboard-hero"><div class="dashboard-hero-copy"><p class="eyebrow">BAYPATH RVTHS / ELECTRONICS WORKSPACE</p>' +
+      '<h1>A better place to <span>plan, build, and find things.</span></h1>' +
+      '<p class="dashboard-lede">Your shop reference, organized around the work itself. Explore circuit drawings, follow projects from the first idea to final test, and find components by part number or storage location without digging through one long document. The goal is simple: make the information useful at the bench, easy to maintain, and clear enough for someone else to follow.</p>' +
+      '<div class="dashboard-actions"><a class="button button-accent" href="#/inventory"><span class="button-icon">⌕</span> Find a part <span class="button-end">↗</span></a><a class="button button-outline" href="#/projects">Explore projects <span class="button-end">↗</span></a></div>' +
+      '</div><div class="dashboard-hero-side"><div class="hero-side-top"><span class="hero-status-dot"></span><span>SHOP REFERENCE / 01</span></div>' +
+      '<div class="hero-side-diagram"><img src="assets/images/schematic.svg" alt="" loading="lazy"></div>' +
+      '<div class="hero-side-bottom"><span>LOOK IT UP</span><span>BUILD IT RIGHT</span><span>CHECK THE RESULT</span></div></div></header>' +
+      '<section class="dashboard-metrics" aria-label="Library overview">' +
+      '<div class="metric-card"><span class="metric-icon">◇</span><span class="metric-label">PROJECT LIBRARY</span><strong>' + projects.filter(p => !p.template).length.toString().padStart(2,"0") + '</strong><small>Reference builds and notes</small></div>' +
+      '<div class="metric-card"><span class="metric-icon">▤</span><span class="metric-label">REFERENCE SECTIONS</span><strong>' + flatNav.filter(item => item.path !== "/" && item.path !== "/projects" && item.path !== "/inventory").length.toString().padStart(2,"0") + '</strong><small>Drawings, resources, and class pages</small></div>' +
+      '<div class="metric-card metric-card-inventory"><span class="metric-icon">▦</span><span class="metric-label">INVENTORY CATALOG</span><strong>' + exampleCount.padStart(2,"0") + '</strong><small>' + (exampleInventory ? "Demonstration rows — not verified stock" : "Catalog line items") + '</small></div>' +
+      '<div class="metric-card"><span class="metric-icon">⌁</span><span class="metric-label">PART CATEGORIES</span><strong>' + categoryCount.toString().padStart(2,"0") + '</strong><small>' + (exampleInventory ? "Example categories" : "Ways to narrow the catalog") + '</small></div>' +
+      '</section>' +
+      '<section class="dashboard-section"><div class="dashboard-section-heading"><div><p class="section-overline">THE WORKSPACE</p><h2>Go straight to what you need.</h2><p>Each section has a clear job. Drawings stay separate from assembly instructions, and inventory records stay separate from project write-ups.</p></div><span class="section-side-label">LIBRARY INDEX / 01</span></div>' +
+      '<div class="library-grid">' + cards + '</div></section>' +
+      '<section class="dashboard-section dashboard-project-section"><div class="dashboard-section-heading"><div><p class="section-overline">FROM THE PROJECT BENCH</p><h2>Build notes with a clear path.</h2><p>Start with the brief, understand the design choices, follow the assembly steps, then verify the finished circuit. Each reference build keeps its drawing, parts, procedure, and troubleshooting notes together.</p></div><a href="#/projects" class="text-link">View all projects ↗</a></div>' +
+      featuredCards + '</section>' +
+      '<section class="workflow-strip"><div class="workflow-strip-heading"><span class="workflow-chip">WORKFLOW</span><h2>From question to working build.</h2></div>' +
+      '<div class="workflow-strip-steps"><div><span>01</span><strong>Look it up</strong><p>Find the drawing, component, or class resource before work begins.</p></div><div><span>02</span><strong>Plan the work</strong><p>Review part ratings, connections, tools, and the expected result.</p></div><div><span>03</span><strong>Build in order</strong><p>Follow the numbered instructions and the checks attached to each step.</p></div><div><span>04</span><strong>Verify</strong><p>Test the result, compare it to the plan, and note what needs to change.</p></div></div></section>' +
+      '<aside class="dashboard-note"><span class="note-mark">i</span><div><strong>Keep the catalog useful</strong><p>The inventory table is built for bulk browsing, but its quantities and storage locations only become dependable when real stock is counted and the records are kept current.</p></div><a href="#/inventory">Open inventory ↗</a></aside>' +
+      '</div>';
   }
 
   function renderProjectGallery(path) {
