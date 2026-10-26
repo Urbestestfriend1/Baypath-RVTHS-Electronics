@@ -4,42 +4,70 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090711">
-  <meta name="description" content="Baypath RVTHS Shop Class — projects, schematics, and shop resources.">
+  <meta name="description" content="Baypath RVTHS Shop Class — a workshop dashboard for projects, circuit drawings, inventory, and class resources.">
   <title>Shop Class — Baypath RVTHS</title>
   <link rel="icon" href="assets/images/mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261026-violet-workflow">
-  <script defer src="data/site-config.js?v=20261026-violet-workflow"></script>
-  <script defer src="data/navigation.js?v=20261026-violet-workflow"></script>
-  <script defer src="data/pages.js?v=20261026-violet-workflow"></script>
-  <script defer src="data/projects.js?v=20261026-violet-workflow"></script>
-  <script defer src="assets/js/app.js?v=20261026-violet-workflow"></script>
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261026-workshop-rebuild">
+  <script defer src="data/site-config.js?v=20261026-workshop-rebuild"></script>
+  <script defer src="data/navigation.js?v=20261026-workshop-rebuild"></script>
+  <script defer src="data/pages.js?v=20261026-workshop-rebuild"></script>
+  <script defer src="data/projects.js?v=20261026-workshop-rebuild"></script>
+  <script defer src="data/inventory.js?v=20261026-workshop-rebuild"></script>
+  <script defer src="assets/js/app.js?v=20261026-workshop-rebuild"></script>
 </head>
 <body>
   <a class="skip" href="#main-content">Skip to content</a>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="#/" aria-label="Shop Class home">
-        <img class="brand-icon" src="assets/images/mark.svg" alt="">
-        <span class="brand-copy"><strong id="brand-name">SHOP CLASS</strong><small id="brand-tagline">BAYPATH RVTHS</small></span>
-      </a>
-      <button class="menu-button" id="menu-button" aria-expanded="false" aria-controls="top-nav" aria-label="Open navigation">Menu <span>☰</span></button>
-      <nav class="top-nav" id="top-nav" aria-label="Main navigation"></nav>
-      <div class="site-search search">
-        <span class="search-symbol">⌕</span>
-        <input id="site-search" type="search" placeholder="Search…" autocomplete="off" aria-label="Search the site">
-        <div class="search-results" id="search-results" role="status" aria-live="polite" hidden></div>
+  <div class="app-shell">
+    <aside class="site-sidebar" id="site-sidebar" aria-label="Workshop navigation">
+      <div class="sidebar-brand-row">
+        <a class="brand" href="#/" aria-label="Shop Class home">
+          <img class="brand-icon" src="assets/images/mark.svg" alt="">
+          <span class="brand-copy"><strong id="brand-name">SHOP CLASS</strong><small id="brand-tagline">BAYPATH RVTHS</small></span>
+        </a>
+        <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Close navigation">×</button>
       </div>
+      <div class="sidebar-overline">WORKSPACE</div>
+      <nav class="top-nav" id="top-nav" aria-label="Main navigation"></nav>
+      <div class="sidebar-section-rule"></div>
+      <div class="sidebar-overline sidebar-context-heading">CURRENT SECTION</div>
+      <nav class="context-nav" id="context-nav" aria-label="Section navigation" hidden></nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-status">
+        <span class="status-dot"></span>
+        <div><strong>Workshop reference</strong><small>Projects · parts · class resources</small></div>
+      </div>
+      <div class="sidebar-footer">
+        <span>Baypath RVTHS</span>
+        <span class="sidebar-footer-mark">ELECTRONICS / SHOP</span>
+      </div>
+    </aside>
+    <button class="sidebar-backdrop" id="sidebar-backdrop" type="button" aria-label="Close navigation" hidden></button>
+    <div class="workspace">
+      <header class="site-header">
+        <div class="header-inner">
+          <button class="menu-button" id="menu-button" type="button" aria-expanded="false" aria-controls="site-sidebar" aria-label="Open navigation"><span class="menu-glyph">☰</span><span>Menu</span></button>
+          <div class="topbar-heading">
+            <span class="topbar-kicker">BAYPATH / TECHNICAL WORKSPACE</span>
+            <strong>Electronics shop hub</strong>
+          </div>
+          <div class="site-search search">
+            <span class="search-symbol">⌕</span>
+            <input id="site-search" type="search" placeholder="Search projects, parts, resources…" autocomplete="off" aria-label="Search the site">
+            <kbd class="search-shortcut">/</kbd>
+            <div class="search-results" id="search-results" role="status" aria-live="polite" hidden></div>
+          </div>
+        </div>
+      </header>
+      <main id="main-content" tabindex="-1"><div id="app"></div></main>
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <a class="footer-brand" id="footer-brand" href="#/">SHOP CLASS</a>
+          <span id="footer-school">Baypath Regional Vocational Technical High School</span>
+          <span class="footer-motto">Plan / Build / Verify</span>
+          <span id="footer-year"></span>
+        </div>
+      </footer>
     </div>
-  </header>
-  <nav class="context-nav" id="context-nav" aria-label="Section navigation" hidden></nav>
-  <main id="main-content" tabindex="-1"><div id="app"></div></main>
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <a class="footer-brand" id="footer-brand" href="#/">SHOP CLASS</a>
-      <span id="footer-school">Baypath Regional Vocational Technical High School</span>
-      <span class="footer-motto">Learn / Build / Create</span>
-      <span id="footer-year"></span>
-    </div>
-  </footer>
+  </div>
 </body>
 </html>
