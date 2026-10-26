@@ -18,8 +18,9 @@
   const href = path => "#" + (path || "/");
   const pathNow = () => {
     const raw = location.hash.slice(1);
-    if (!raw || raw === "/") return "/";
-    return raw.startsWith("/") ? raw.replace(/\/+$/, "") : "/" + raw.replace(/\/+$/, "");
+    // Ordinary page anchors (for example #main-content) are not application routes.
+    if (!raw || raw === "/" || !raw.startsWith("/")) return "/";
+    return raw.replace(/\\/+$/, "") || "/";
   };
   const activePath = (current, target) => current === target || (target !== "/" && current.startsWith(target + "/"));
   const flatten = (items, trail) => items.flatMap(item => {
