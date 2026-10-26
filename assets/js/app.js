@@ -451,8 +451,8 @@
     if (!page) return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">404 / NOT FOUND</p><h1>Page not found</h1><p>This page is not available. Check the navigation or return to the home page.</p><a class="button button-outline" href="#/">Return home</a></div></header></div>';
     const content = sectionMarkup(page.sections) + childCards(path) + contentCards(page.cards) + callout(page.callout);
     const empty = content ? "" : '<div class="empty-state"><strong>This section is still taking shape.</strong><p>Class notes, drawings, and reference files will appear here when available.</p></div>';
-    return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">' + esc(page.eyebrow || "SHOP CLASS LIBRARY") + '</p><h1>' +
-      esc(page.title || (navItem(path) || {}).label || "Shop Class") + '</h1><p>' + esc(page.description || "") + '</p></div></header>' +
+    return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">' + esc(page.eyebrow || "Electronics library") + '</p><h1>' +
+      esc(page.title || (navItem(path) || {}).label || "Electronics") + '</h1><p>' + esc(page.description || "") + '</p></div></header>' +
       '<div class="page-content">' + content + empty + '</div></div>';
   }
 
@@ -475,7 +475,7 @@
     app.classList.add("is-entering");
     if (path === "/inventory") updateInventoryResults();
     const page = pages[path];
-    document.title = (project ? project.title : page ? page.title : path === "/" ? "Home" : "Shop Class") + " — " + (cfg.brand || "Shop Class");
+    document.title = (project ? project.title : page ? page.title : path === "/" ? "Home" : "Electronics") + " — " + (cfg.brand || "Electronics");
     setSidebarOpen(false);
   }
 
@@ -504,10 +504,10 @@
   }
 
   setTheme();
-  document.getElementById("brand-name").textContent = cfg.brand || "SHOP CLASS";
+  document.getElementById("brand-name").textContent = cfg.brand || "ELECTRONICS";
   document.getElementById("brand-tagline").textContent = cfg.tagline || "BAYPATH RVTHS";
-  document.getElementById("footer-brand").textContent = cfg.brand || "SHOP CLASS";
-  document.getElementById("footer-school").textContent = cfg.schoolName || "Shop Class";
+  document.getElementById("footer-brand").textContent = cfg.brand || "ELECTRONICS";
+  document.getElementById("footer-school").textContent = cfg.schoolName || "Electronics";
   document.getElementById("footer-year").textContent = "© " + new Date().getFullYear();
 
   app.addEventListener("click", event => {
