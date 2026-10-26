@@ -76,6 +76,12 @@ window.SHOP_PAGES = {
     title: "Projects",
     description: "Build notes, circuit diagrams, parts, and test steps for projects used in the shop."
   },
+  "/inventory": {
+    eyebrow: "SHOP INVENTORY / MASTER CATALOG",
+    title: "Inventory",
+    description: "A searchable master catalog for the parts, tools, test equipment, wiring, consumables, and reusable hardware used around the shop. Records are organized by part number, category, and storage location so a student or instructor can find an item without having to scan one enormous list by hand.",
+    sections: []
+  },
   "/resources": {
     eyebrow: "REFERENCE / CLASS MATERIAL",
     title: "Resources",
