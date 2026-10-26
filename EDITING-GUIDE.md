@@ -9,6 +9,7 @@ Most updates can be made directly on GitHub: open the file, select the pencil ic
 | Site colors, name, homepage headline, banner, and shortcuts | `data/site-config.js` |
 | Tabs and subtabs | `data/navigation.js` |
 | Project descriptions, design process, parts, build steps, checks, images, and links | `data/projects.js` |
+| Inventory parts, counts, categories, storage paths, suppliers, and notes | `data/inventory.js` |
 | Other page text and cards | `data/pages.js` |
 | Overall layout, colors, spacing, and visual design details | `assets/css/styles.css` |
 | Page structure and project layout logic | `assets/js/app.js` |
@@ -89,6 +90,53 @@ troubleshooting: [
 ```
 
 These fields are used to build the separate Design Process and Test & Troubleshoot sections. They are not hidden in the general project description.
+
+## Manage the shop inventory
+
+Open `data/inventory.js`. This file is the inventory source of truth. The current 25 rows are explicitly marked as examples; their quantities, makers, and `DEMO` locations are not verified Baypath shop records. Replace or remove those rows before relying on the counts.
+
+The inventory page supports catalog search, category and storage-area filters, stock-status filters, sortable columns, 25/50/100/200-row pagination, and CSV export. Those controls only change the current browser view. To make a permanent stock change, edit `data/inventory.js` and commit the file to GitHub.
+
+Each record can use these fields:
+
+- `id`: unique internal record ID. Keep it unique.
+- `partNumber`: your internal stock number or manufacturer SKU.
+- `name`, `manufacturer`, `category`: the label used to recognize and group the item.
+- `description` and `notes`: what the part is for, compatibility reminders, condition details, or handling information.
+- `location`: an object with `area`, `cabinet`, `shelf`, and `bin` so storage can be searched and clearly displayed.
+- `quantity` and `unit`: the latest counted amount and its unit (`pcs`, `sets`, `reels`, `units`, etc.). Use `null` if the count has not been verified; do not use zero to mean “unknown.”
+- `minimumQuantity`: the restock threshold. A positive quantity at or below this value is shown as low stock.
+- `condition`, `supplier`, `datasheet`, and `updatedAt`: optional recordkeeping and reference details.
+- `recordType: "example"`: marks a demonstration row. Remove this field when the record has been replaced with real, verified shop data.
+
+Example record:
+
+```js
+{
+  id: "BAY-0001",
+  partNumber: "RES-1K-025W",
+  name: "1 kΩ resistor, ¼ W",
+  manufacturer: "Manufacturer name",
+  category: "Resistors",
+  description: "Through-hole resistor for general circuit work.",
+  location: {
+    area: "Electronics Lab",
+    cabinet: "Component cabinet A",
+    shelf: "Drawer A01",
+    bin: "Bin 01"
+  },
+  quantity: 120,
+  unit: "pcs",
+  minimumQuantity: 25,
+  condition: "New",
+  supplier: "Supplier name",
+  datasheet: "",
+  updatedAt: "2026-10-26",
+  notes: "Verify tolerance and power rating before use."
+}
+```
+
+For a large catalog, keep part numbers consistent, use the same spelling for storage areas and categories, and update the count date whenever you perform a stock check. Include units so a box, a set, and an individual part are not accidentally treated as the same quantity. CSV export exports the currently filtered result set; it does not import changes back into the website.
 
 ## Change tabs or regular pages
 
