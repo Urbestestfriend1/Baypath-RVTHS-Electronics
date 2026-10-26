@@ -198,7 +198,7 @@
     }).join("") + '</ul>';
   }
   function projectSteps(steps) {
-    if (!steps || !steps.length) return '<p class="muted-note">Build steps have not been added yet.</p>';
+    if (!steps || !steps.length) return '<p class="muted-note">Build steps are not available for this project yet.</p>';
     return '<ol class="steps-list">' + steps.map((step, index) =>
       '<li><span class="step-number">' + String(index + 1).padStart(2, "0") + '</span><div class="step-body"><h3>' +
       esc(step.title || "Step " + (index + 1)) + '</h3><p>' + esc(step.description || "") + '</p>' +
