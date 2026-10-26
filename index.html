@@ -1,62 +1,42 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop Class</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111827;
-      color: #f9fafb;
-    }
-
-    header {
-      padding: 60px 24px;
-      text-align: center;
-      background: #1f2937;
-    }
-
-    h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      margin-bottom: 12px;
-    }
-
-    main {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 24px;
-    }
-
-    .panel {
-      padding: 24px;
-      border: 1px solid #374151;
-      border-radius: 16px;
-      background: #1f2937;
-    }
-
-    .accent {
-      color: #60a5fa;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101513">
+  <meta name="description" content="A home for shop class schematics, projects, and resources.">
+  <title>Workshop — Shop Class Hub</title>
+  <link rel="icon" href="assets/images/workshop-banner.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script defer src="data/site-config.js"></script>
+  <script defer src="data/navigation.js"></script>
+  <script defer src="data/pages.js"></script>
+  <script defer src="assets/js/app.js"></script>
 </head>
-
 <body>
-  <header>
-    <p class="accent">YOUR CLASS • YOUR PROJECTS</p>
-    <h1>Shop Class</h1>
-    <p>A new home for everything shop-related.</p>
+  <a class="skip" href="#main-content">Skip to content</a>
+  <header class="header">
+    <div class="header-inner">
+      <a class="brand" href="#/" aria-label="Workshop home">
+        <img class="brand-icon" src="assets/images/mark.svg" alt="">
+        <span class="brand-text"><strong id="brand-name">WORKSHOP</strong><small id="brand-tagline">SHOP CLASS HUB</small></span>
+      </a>
+      <button class="menu-button" id="menu-button" aria-expanded="false" aria-controls="top-nav" aria-label="Toggle navigation">☰</button>
+      <nav class="nav" id="top-nav" aria-label="Main navigation"></nav>
+      <div class="search">
+        <input id="site-search" type="search" placeholder="Search the site…" autocomplete="off" aria-label="Search the site">
+        <div class="search-results" id="search-results" role="status" aria-live="polite" hidden></div>
+      </div>
+    </div>
   </header>
-
-  <main>
-    <section class="panel">
-      <h2>Welcome</h2>
-      <p>Our new shop class website is under construction.</p>
-      <p>Check back soon for projects, resources, and more.</p>
-    </section>
-  </main>
+  <main id="main-content" tabindex="-1"><div id="app"></div></main>
+  <footer class="footer">
+    <div class="footer-inner">
+      <a class="footer-brand" id="footer-brand" href="#/">WORKSHOP<span> / SHOP CLASS</span></a>
+      <p>A living reference for making, learning, and building.</p>
+      <a class="top-link" href="#main-content">Back to top ↑</a>
+    </div>
+    <div class="footer-bottom"><span>Built to be edited. Designed to grow.</span><span id="footer-year"></span></div>
+  </footer>
 </body>
 </html>
