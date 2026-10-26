@@ -190,6 +190,113 @@
       '</div>';
   }
 
+  function inventoryLocation(item) {
+    const l=item.location||{};
+    return [l.area,l.cabinet,l.shelf,l.bin].filter(Boolean).join(" / ")||"Location not entered";
+  }
+  function inventoryArea(item){return (item.location&&item.location.area)||"Location not entered";}
+  function inventoryStock(item){
+    if(item.quantity==null||item.quantity==="")return {key:"unknown",label:"Count needed"};
+    const q=Number(item.quantity);
+    if(!Number.isFinite(q))return {key:"unknown",label:"Count needed"};
+    if(q<=0)return {key:"out",label:"Out of stock"};
+    if(item.minimumQuantity!=null&&Number(item.minimumQuantity)>0&&q<=Number(item.minimumQuantity))return {key:"low",label:"Low stock"};
+    return {key:"in",label:"In stock"};
+  }
+  function inventoryCategories(){return [...new Set(inventory.map(x=>x.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
+  function inventoryAreas(){return [...new Set(inventory.map(inventoryArea))].sort((a,b)=>a.localeCompare(b));}
+  function optionList(values,current,allLabel){
+    return '<option value="all"'+(current==="all"?" selected":"")+'>'+esc(allLabel)+'</option>'+
+      values.map(value=>'<option value="'+esc(value)+'"'+(current===value?" selected":"")+'>'+esc(value)+'</option>').join("");
+  }
+  function inventoryMatches(){
+    const q=inventoryState.query.trim().toLowerCase();
+    return inventory.filter(item=>{
+      const loc=item.location||{},status=inventoryStock(item);
+      const haystack=[item.id,item.partNumber,item.name,item.manufacturer,item.category,item.description,
+        inventoryLocation(item),loc.area,loc.cabinet,loc.shelf,loc.bin,item.quantity,item.unit,item.minimumQuantity,
+        item.condition,item.supplier,item.notes,item.datasheet,item.updatedAt,...(item.tags||[])].join(" ").toLowerCase();
+      return (!q||haystack.includes(q)) &&
+        (inventoryState.category==="all"||item.category===inventoryState.category) &&
+        (inventoryState.area==="all"||inventoryArea(item)===inventoryState.area) &&
+        (inventoryState.stock==="all"||status.key===inventoryState.stock);
+    }).sort((a,b)=>{
+      const key=inventoryState.sortBy;let av,bv;
+      if(key==="location"){av=inventoryLocation(a);bv=inventoryLocation(b);}
+      else if(key==="status"){av=inventoryStock(a).label;bv=inventoryStock(b).label;}
+      else if(key==="quantity"){av=a.quantity==null?-1:Number(a.quantity);bv=b.quantity==null?-1:Number(b.quantity);}
+      else{av=a[key]==null?"":a[key];bv=b[key]==null?"":b[key];}
+      const cmp=typeof av==="number"&&typeof bv==="number"?av-bv:String(av).localeCompare(String(bv),undefined,{numeric:true,sensitivity:"base"});
+      return (inventoryState.sortDir==="desc"?-cmp:cmp)||String(a.id).localeCompare(String(b.id));
+    });
+  }
+  function inventoryTableRows(rows){
+    if(!rows.length)return '<tr><td colspan="7"><div class="inventory-no-results"><strong>No matching inventory records.</strong><p>Try a shorter search, clear one of the filters, or reset the catalog view.</p><button class="button button-outline" type="button" data-inventory-reset>Reset filters</button></div></td></tr>';
+    return rows.map(item=>{
+      const stock=inventoryStock(item),loc=item.location||{};
+      return '<tr><td class="inventory-number-cell"><span class="inventory-part-number">'+esc(item.partNumber||item.id||"—")+'</span><small>'+esc(item.id||"")+'</small></td>'+
+        '<td class="inventory-name-cell"><strong>'+esc(item.name||"Unnamed part")+'</strong><small>'+esc(item.manufacturer||"Manufacturer not listed")+'</small><span class="inventory-row-meta">'+esc(item.condition||"Condition not recorded")+(item.supplier?" · "+esc(item.supplier):"")+'</span></td>'+
+        '<td><span class="inventory-category-tag">'+esc(item.category||"Uncategorized")+'</span></td>'+
+        '<td class="inventory-location-cell"><strong>'+esc(loc.area||"Area not entered")+'</strong><small>'+esc([loc.cabinet,loc.shelf,loc.bin].filter(Boolean).join(" / ")||"Cabinet or bin not entered")+'</small></td>'+
+        '<td class="inventory-quantity-cell"><strong>'+esc(item.quantity==null?"—":Number(item.quantity).toLocaleString("en-US"))+'</strong><small>'+esc(item.unit||"units")+(item.minimumQuantity!=null?" · Min "+esc(item.minimumQuantity):"")+'</small></td>'+
+        '<td><span class="stock-pill stock-'+stock.key+'">'+(stock.key==="in"?"✓":stock.key==="low"?"!":stock.key==="out"?"×":"?")+' '+esc(stock.label)+'</span></td>'+
+        '<td class="inventory-notes-cell"><p>'+esc(item.description||"No description recorded.")+'</p>'+(item.notes?'<small>'+esc(item.notes)+'</small>':"")+
+        (item.datasheet?'<a href="'+esc(item.datasheet)+'" target="_blank" rel="noopener">Datasheet / reference ↗</a>':"")+
+        (item.updatedAt?'<span class="inventory-updated">Updated '+esc(item.updatedAt)+'</span>':"")+'</td></tr>';
+    }).join("");
+  }
+  function inventoryExportCSV(rows){
+    const headers=["id","partNumber","name","manufacturer","category","locationArea","cabinet","shelf","bin","quantity","unit","minimumQuantity","condition","supplier","description","notes","datasheet","updatedAt","recordType"];
+    const quote=value=>'"'+String(value==null?"":value).replace(/"/g,'""')+'"';
+    const data=rows.map(item=>headers.map(h=>{
+      if(h==="locationArea")return quote(inventoryArea(item));
+      if(["cabinet","shelf","bin"].includes(h))return quote((item.location||{})[h]);
+      return quote(item[h]);
+    }).join(","));
+    const blob=new Blob(["\uFEFF",[headers.map(quote).join(","),...data].join("\r\n")],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="shop-inventory-export.csv";
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  }
+  function updateInventoryResults(){
+    const host=document.getElementById("inventory-results");if(!host)return;
+    const rows=inventoryMatches(),total=rows.length,size=Math.max(10,Number(inventoryState.pageSize)||50);
+    const pageCount=Math.max(1,Math.ceil(total/size));inventoryState.page=Math.min(Math.max(1,inventoryState.page),pageCount);
+    const start=total?(inventoryState.page-1)*size:0,end=Math.min(start+size,total),shown=rows.slice(start,start+size);
+    const range=total?(start+1).toLocaleString("en-US")+"–"+end.toLocaleString("en-US"):"0";
+    const arrow=k=>inventoryState.sortBy===k?(inventoryState.sortDir==="asc"?" ↑":" ↓"):"";
+    host.innerHTML='<div class="inventory-table-toolbar"><div><p class="inventory-range"><strong>'+range+'</strong> of '+total.toLocaleString("en-US")+' matching records</p><span>Page '+inventoryState.page+' of '+pageCount+'</span></div><label class="page-size-control">Rows per page <select id="inventory-page-size">'+[25,50,100,200].map(n=>'<option value="'+n+'"'+(n===size?" selected":"")+'>'+n+'</option>').join("")+'</select></label></div>'+
+      '<div class="inventory-table-scroll"><table class="inventory-table"><thead><tr>'+
+      '<th><button type="button" data-inventory-sort="partNumber">PART NUMBER'+arrow("partNumber")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="name">PART / MAKER'+arrow("name")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="category">CATEGORY'+arrow("category")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="location">STORAGE LOCATION'+arrow("location")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="quantity">QUANTITY'+arrow("quantity")+'</button></th>'+
+      '<th><button type="button" data-inventory-sort="status">STOCK STATUS'+arrow("status")+'</button></th><th>DESCRIPTION / NOTES</th></tr></thead><tbody>'+inventoryTableRows(shown)+'</tbody></table></div>'+
+      '<div class="inventory-pagination"><span>Showing '+range+' records</span><div><button type="button" class="button button-outline" data-inventory-prev '+(inventoryState.page<=1?"disabled":"")+'>← Previous</button><span>Page '+inventoryState.page+' / '+pageCount+'</span><button type="button" class="button button-outline" data-inventory-next '+(inventoryState.page>=pageCount?"disabled":"")+'>Next →</button></div></div>';
+    const summary=document.getElementById("inventory-live-summary");if(summary)summary.textContent=total.toLocaleString("en-US")+" matching record"+(total===1?"":"s");
+  }
+  function renderInventory(path){
+    const categories=inventoryCategories(),areas=inventoryAreas(),isExample=inventory.length>0&&inventory.every(item=>item.recordType==="example");
+    const low=inventory.filter(x=>inventoryStock(x).key==="low").length,out=inventory.filter(x=>inventoryStock(x).key==="out").length;
+    return '<div class="page-shell inventory-page">'+breadcrumbs(path)+
+      '<header class="inventory-page-heading"><div><p class="eyebrow">SHOP SYSTEMS / MASTER CATALOG</p><h1>Inventory<span class="heading-period">.</span></h1>'+
+      '<p>A searchable, structured catalog for electronic components, wiring, hand tools, test equipment, consumables, and reusable shop assets. Search by the part you know, filter by where it lives, and sort the list to review quantities or identify records that need attention. As the catalog grows, filters narrow the full dataset while pagination keeps each view manageable.</p></div>'+
+      '<div class="inventory-heading-side"><span class="inventory-heading-icon">▦</span><strong>MASTER STOCK LIST</strong><small>Part → Location → Quantity → Notes</small><a href="#inventory-catalog">Browse the catalog ↓</a></div></header>'+
+      (isExample?'<aside class="inventory-demo-notice"><span class="demo-notice-icon">!</span><div><strong>Demonstration data — not verified Baypath stock</strong><p>The rows below are examples that show how the catalog works. Quantities, manufacturers, and storage locations are fictional sample values. Replace or remove these records in <code>data/inventory.js</code> before using the table to locate real parts or make purchasing decisions.</p></div></aside>':"")+
+      '<section class="inventory-summary-grid" aria-label="Inventory summary"><div class="inventory-summary-card"><span>CATALOG LINES</span><strong>'+inventory.length.toLocaleString("en-US")+'</strong><small>'+(isExample?"Example records loaded":"Records in the catalog")+'</small></div>'+
+      '<div class="inventory-summary-card"><span>PART CATEGORIES</span><strong>'+categories.length.toString().padStart(2,"0")+'</strong><small>Filter the list by type</small></div>'+
+      '<div class="inventory-summary-card"><span>LOW STOCK</span><strong>'+(isExample?"—":low.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"At or below minimum quantity")+'</small></div>'+
+      '<div class="inventory-summary-card"><span>OUT OF STOCK</span><strong>'+(isExample?"—":out.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"Requires a restock check")+'</small></div></section>'+
+      '<section class="inventory-catalog" id="inventory-catalog"><div class="inventory-catalog-heading"><div><p class="section-overline">MASTER TABLE</p><h2>Find an item</h2><p>Combine filters to narrow the list. Search checks part numbers, names, manufacturer, storage location, descriptions, and notes.</p></div><div class="inventory-catalog-actions"><button type="button" class="button button-outline" data-inventory-reset>Reset filters</button><button type="button" class="button button-accent" data-inventory-export>Export CSV ↗</button></div></div>'+
+      '<div class="inventory-filter-grid"><label class="inventory-search-control"><span>SEARCH THE CATALOG</span><div class="inventory-search-box"><span>⌕</span><input type="search" id="inventory-search" value="'+esc(inventoryState.query)+'" placeholder="Part #, name, value, bin, maker, notes…" autocomplete="off"><kbd>/</kbd></div></label>'+
+      '<label><span>CATEGORY</span><select id="inventory-category">'+optionList(categories,inventoryState.category,"All categories")+'</select></label>'+
+      '<label><span>STORAGE AREA</span><select id="inventory-area">'+optionList(areas,inventoryState.area,"All locations")+'</select></label>'+
+      '<label><span>STOCK STATUS</span><select id="inventory-stock"><option value="all"'+(inventoryState.stock==="all"?" selected":"")+'>All statuses</option><option value="in"'+(inventoryState.stock==="in"?" selected":"")+'>In stock</option><option value="low"'+(inventoryState.stock==="low"?" selected":"")+'>Low stock</option><option value="out"'+(inventoryState.stock==="out"?" selected":"")+'>Out of stock</option><option value="unknown"'+(inventoryState.stock==="unknown"?" selected":"")+'>Count needed</option></select></label></div>'+
+      '<div class="inventory-results-strip"><span class="inventory-live-dot"></span><span id="inventory-live-summary" aria-live="polite">Loading catalog results</span><span class="inventory-strip-note">Quantities are shown with each item’s unit and restock minimum.</span></div><div id="inventory-results" aria-live="polite"></div>'+
+      '<div class="inventory-field-guide"><div><span class="field-guide-mark">01</span><div><strong>Part number</strong><p>Use a consistent internal ID, manufacturer SKU, or other unique identifier. Keep it stable when an item is moved to another shelf.</p></div></div><div><span class="field-guide-mark">02</span><div><strong>Storage location</strong><p>Record the area, cabinet, shelf or drawer, and bin. Make the location specific enough that someone unfamiliar with the list can find the item without guessing.</p></div></div><div><span class="field-guide-mark">03</span><div><strong>Quantity & minimum</strong><p>Record the counted amount and the level that should trigger a restock review. Use a consistent unit such as pcs, sets, reels, or units.</p></div></div></div></section>'+
+      '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>Keep counts trustworthy.</strong><p>This is a static catalog, so permanent changes are made in <code>data/inventory.js</code> and published with a GitHub commit. Search, filters, sorting, pagination, and CSV export work in the browser, but changing a displayed quantity does not write it back to GitHub. Periodic counts and a consistent part-number format keep the master list dependable.</p></div></aside></div>';
+  }
+
   function renderProjectGallery(path) {
     const realCount = projects.filter(p => !p.template).length;
     const ready = projects.length
