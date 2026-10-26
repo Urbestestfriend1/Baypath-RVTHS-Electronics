@@ -1,10 +1,12 @@
 /*
   NAVIGATION TREE
-  Add or rearrange sections here. Every path should have a matching data/pages.js entry,
-  /projects is backed by data/projects.js; /inventory is backed by data/inventory.js.
+  Keep the primary workspace tools near the top. Every regular path should have a
+  matching data/pages.js entry; /projects and /inventory use their own data files.
 */
 window.SHOP_NAVIGATION = [
   { label: "Home", path: "/", icon: "⌂" },
+  { label: "Inventory", path: "/inventory", icon: "▦" },
+  { label: "Projects", path: "/projects", icon: "◇" },
   { label: "Schematics", path: "/schematics", icon: "▤", children: [
     { label: "Freshman", path: "/schematics/freshman", children: [
       { label: "Projects", path: "/schematics/freshman/projects" }
@@ -20,8 +22,6 @@ window.SHOP_NAVIGATION = [
     ]},
     { label: "Common", path: "/schematics/common" }
   ]},
-  { label: "Projects", path: "/projects", icon: "◇" },
-  { label: "Inventory", path: "/inventory", icon: "▦" },
   { label: "Resources", path: "/resources", icon: "⌁", children: [
     { label: "Shop Safety", path: "/resources/safety" },
     { label: "Tools & Equipment", path: "/resources/tools" }
