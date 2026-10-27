@@ -400,8 +400,9 @@
         _sitePublished: row.published === true, featured: row.featured === true };
       if (row.content_type === "project") {
         const idx = projects.findIndex(item => item.slug === row.slug);
-        if (idx >= 0) projects[idx] = { ...projects[idx], ...common };
-        else projects.push(common);
+        const projectRecord = { ...common, featured: data.featured === true, grade: data.grade || data.gradeLevel || data.classYear || "Unassigned" };
+        if (idx >= 0) projects[idx] = { ...projects[idx], ...projectRecord };
+        else projects.push(projectRecord);
       } else if (row.content_type === "spotlight") {
         common.published = row.published === true;
         const idx = spotlights.findIndex(item => item.slug === row.slug);
@@ -954,7 +955,7 @@
       projectTroubleshooting(project.troubleshooting) + '</section>' +
       '<section class="project-section" id="references"><div class="project-section-heading"><span class="section-num">07</span><div><p class="section-overline">LOOK UP THE DETAILS</p><h2>References & datasheets</h2><p>Use manufacturer documents to confirm the exact part ratings and pinout.</p></div></div>' +
       '<div class="detail-panel references-panel">' + projectFiles(project.files) + '</div></section>' +
-      '<section class="project-section" id="gallery"><div class="project-section-heading"><span class="section-num">08</span><div><p class="section-overline">VISUAL NOTES</p><h2>Project gallery</h2><p>Diagrams, photos, and supporting visuals.</p></div></div>' + projectGalleryImages(project.gallery) + '</section>' +
+      '<section class="project-section" id="gallery"><div class="project-section-heading"><span class="section-num">08</span><div><p class="section-overline">VISUAL NOTES</p><h2>Project gallery</h2><p>Diagrams, photos, and supporting visuals.</p></div></div>' + projectGalleryImages(project.gallery) + '</section>' + contentVideoBlock(project, project.title + ' project video') +
       (project.notes ? '<aside class="project-notes"><span class="note-mark">i</span><div><strong>Notes & limitations</strong><p>' + esc(project.notes) + '</p></div></aside>' : "") +
       '<div class="return-row"><a class="button button-outline" href="#/projects">← Back to projects</a><a class="text-link" href="#/projects">Browse another project ↗</a></div></div>';
   }
@@ -1008,18 +1009,43 @@
       (item.featuredCaption ? '<figcaption>' + esc(item.featuredCaption) + '</figcaption>' : '') + '</figure></header>' +
       '<div class="spotlight-content">' + storyMarkup + contributionMarkup + highlightsMarkup +
       (gallery ? '<section class="spotlight-block"><div class="spotlight-block-heading"><p class="section-overline">GALLERY</p><h2>More views</h2></div><div class="spotlight-gallery">' + gallery + '</div></section>' : '') +
-      youtubeEmbed(item.videoId, item.title + " — creator spotlight") +
+      contentVideoBlock(item, item.title + " — creator spotlight") +
       '</div><div class="spotlight-return"><a class="text-link" href="#/spotlights">← Back to all spotlights</a></div></div>';
+  }
+
+  function renderSchematicLibrary(path) {
+    const rows = siteContent
+      .filter(row => row.content_type === "schematic" && (row.published === true || isActiveAdmin()))
+      .slice()
+      .sort((a,b) => String(a.title).localeCompare(String(b.title)));
+    const body = rows.length
+      ? '<div class="schematic-content-list">' + rows.map(row => {
+          const data = row.content || {};
+          const image = data.featuredImage || data.schematicImage || "assets/images/schematic.png";
+          const description = data.summary || data.description || "";
+          return '<article class="schematic-content-row"><a class="schematic-content-image" href="' + href("/schematics/" + row.slug) + '"><img src="' + esc(image) + '" alt="' + esc(data.featuredImageAlt || data.schematicAlt || row.title) + '" loading="lazy"></a>' +
+            '<div class="schematic-content-copy"><p class="section-overline">' + esc(data.category || "SHARED CIRCUIT REFERENCE") + '</p><h2><a href="' + href("/schematics/" + row.slug) + '">' + esc(row.title) + '</a></h2><p>' + esc(description) + '</p>' +
+            '<a class="text-link" href="' + href("/schematics/" + row.slug) + '">Open schematic <span aria-hidden="true">↗</span></a></div>' +
+            (isActiveAdmin() && row.published !== true ? '<span class="content-state-draft">Draft · admin only</span>' : '') +
+            '</article>';
+        }).join("") + '</div>'
+      : '<div class="schematic-content-empty"><h2>Common circuit references</h2><p>These reusable examples remain available while the editable schematic collection is being set up. Administrators can select “Import current references” in the account console, then update drawings, notes, and video from the content manager.</p>' +
+        contentCards((basePages["/schematics"] && basePages["/schematics"].cards) || []) + '</div>';
+    return '<div class="page-shell schematic-library-page">' + breadcrumbs(path) +
+      '<header class="page-intro"><div><p class="eyebrow">SHARED CIRCUIT LIBRARY</p><h1>Schematics</h1><p>Reusable circuit drawings and design notes used across classes. Each schematic focuses on the circuit purpose and how to read the drawing; full materials lists, assembly, and verification procedures belong in the companion project guides.</p></div>' +
+      '<span class="count-label">' + rows.length + (rows.length === 1 ? ' SCHEMATIC' : ' SCHEMATICS') + '</span></header>' +
+      body + '</div>';
   }
 
   function renderPage(path) {
     const page = pages[path];
     if (!page) return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">404 / NOT FOUND</p><h1>Page not found</h1><p>This page is not available. Check the navigation or return to the home page.</p><a class="button button-outline" href="#/">Return home</a></div></header></div>';
     const content = sectionMarkup(page.sections) + childCards(path) + contentCards(page.cards) + callout(page.callout);
+    const media = page._contentType === "schematic" ? contentVideoBlock(page, page.title + " video") : "";
     const empty = content ? "" : '<div class="empty-state"><strong>This section is still taking shape.</strong><p>Class notes, drawings, and reference files will appear here when available.</p></div>';
     return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">' + esc(page.eyebrow || "Electronics library") + '</p><h1>' +
       esc(page.title || (navItem(path) || {}).label || "Electronics") + '</h1><p>' + esc(page.description || "") + '</p></div></header>' +
-      '<div class="page-content">' + content + empty + '</div></div>';
+      '<div class="page-content">' + content + media + empty + '</div></div>';
   }
 
   function setSidebarOpen(open) {
@@ -1040,6 +1066,7 @@
       : path === "/inventory" ? renderInventory(path)
       : path === "/account" ? renderAccountPage(path)
       : path === "/spotlights" ? renderSpotlightGallery(path)
+      : path === "/schematics" ? renderSchematicLibrary(path)
       : path === "/projects" ? renderPage(path)
       : gradeProjectMatch ? renderGradeProjectGallery(path, gradeProjectMatch[1])
       : spotlight ? renderSpotlightDetail(spotlight)
