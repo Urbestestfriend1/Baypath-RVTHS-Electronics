@@ -571,6 +571,82 @@
     ).join("")+'</div>';
   }
 
+
+  function renderContentEditorForm() {
+    if (!contentEditorOpen) return "";
+    const row = contentEditorRecord || {};
+    const d = row.content || {};
+    const type = row.content_type || contentEditorType;
+    const val = (key, fallback = "") => d[key] == null ? fallback : d[key];
+    const input = (label, name, value, extra = "") => '<label class="content-editor-field">' + esc(label) + '<input name="' + name + '" value="' + esc(value) + '" ' + extra + '></label>';
+    const area = (label, name, value, rows = 3, hint = "") => '<label class="content-editor-field content-editor-field-wide">' + esc(label) + '<textarea name="' + name + '" rows="' + rows + '">' + esc(value) + '</textarea>' + (hint ? '<small>' + esc(hint) + '</small>' : '') + '</label>';
+    const file = (label, name, accept, multiple = false) => '<label class="content-editor-field">' + esc(label) + '<input name="' + name + '" type="file" accept="' + accept + '"' + (multiple ? ' multiple' : '') + '></label>';
+    const gradeValue = d.gradeLevel || d.grade || d.classYear || "";
+    const videoValue = d.videoUrl || d.videoId || "";
+    const principle = d.principle || {};
+    return '<section class="site-content-editor" id="site-content-editor" aria-labelledby="site-content-editor-title">' +
+      '<div class="content-editor-heading"><div><p class="admin-panel-eyebrow">CONTENT WORKSPACE</p><h3 id="site-content-editor-title">' + (row.id ? 'Edit content' : 'Create content') + '</h3><p>Save a draft, review it on the site, then publish when it is ready.</p></div><button type="button" class="button button-outline" data-content-cancel><span aria-hidden="true">×</span> Close editor</button></div>' +
+      (contentEditorMessage ? '<p class="account-error" role="alert">' + esc(contentEditorMessage) + '</p>' : '') +
+      '<form id="site-content-form"><input type="hidden" name="contentId" value="' + esc(row.id || "") + '"><input type="hidden" name="contentType" value="' + esc(type) + '">' +
+      '<div class="content-editor-grid">' +
+      '<div class="content-editor-type-note"><span class="section-overline">CONTENT TYPE</span><strong>' + esc(type === "spotlight" ? "Creator Spotlight" : type === "project" ? "Project Guide" : "Schematic") + '</strong><p>' + esc(type === "spotlight" ? "Celebrate the finished creation, the creator, and its contribution. No assembly procedure is shown on the spotlight page." : type === "project" ? "Document a real project with its brief, schematic, materials, steps, verification, and media." : "Create a reusable circuit reference with a schematic, design notes, optional video, and a related project guide.") + '</p></div>' +
+      input("Title", "title", row.title || d.title || "", 'required maxlength="180"') +
+      input("URL slug", "slug", row.slug || d.slug || "", 'required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="100" placeholder="lowercase-words-with-hyphens"') +
+      input("Category", "category", d.category || d.eyebrow || "", 'maxlength="120" placeholder="Timing circuits, Robotics, Design…"') +
+      input("Creator / author", "creatorName", d.creatorName || d.author || d.featuredBy || "", 'maxlength="160" placeholder="Name for public credit"') +
+      input("Class / grade year", "gradeLevel", gradeValue, 'maxlength="80" placeholder="Freshman, Sophomore, Junior, Senior"') +
+      input("Status or date label", "status", d.status || d.dateLabel || "", 'maxlength="100" placeholder="Prototype, October 2026…"') +
+      area("Short summary", "summary", d.summary || "", 3, "Used on cards and the homepage spotlight.") +
+      area("Description / overview", "description", d.description || "", 5, "Explain what it is, what it does, and why it matters.") +
+      area("Story / design notes", "story", d.story || d.notes || "", 5, "Spotlights: context and story. Projects/schematics: rationale or additional notes.") +
+      area("Contribution / impact", "contribution", d.contribution || "", 4, "Spotlights: usefulness, originality, impact, or what others can learn.") +
+      area("Highlights", "highlights", rowsToText(d.highlights || [], [""]), 3, "One point per line. Used by Spotlight entries.") +
+      area("Tags", "tags", rowsToText(d.tags || [], [""]), 2, "One tag per line.") +
+      input("Featured image URL", "featuredImage", d.featuredImage || "", 'placeholder="Upload below or paste a public URL"') +
+      input("Featured image alt text", "featuredImageAlt", d.featuredImageAlt || "", 'maxlength="220"') +
+      file("Upload / replace featured image", "featuredFile", "image/png,image/jpeg,image/webp,image/gif,image/avif") +
+      input("Schematic image URL", "schematicImage", d.schematicImage || (d.sections && d.sections[0] && d.sections[0].image) || "", 'placeholder="Upload below or paste a public URL"') +
+      input("Schematic alt text", "schematicAlt", d.schematicAlt || (d.sections && d.sections[0] && d.sections[0].imageAlt) || "", 'maxlength="220"') +
+      file("Upload / replace schematic image", "schematicFile", "image/png,image/jpeg,image/webp,image/gif,image/avif") +
+      area("Additional gallery images", "gallery", rowsToText(d.gallery || [], ["image", "alt", "caption"]), 4, "One per line: image URL | alt text | caption. Upload extra gallery images below to append them.") +
+      file("Upload gallery images", "galleryFiles", "image/png,image/jpeg,image/webp,image/gif,image/avif", true) +
+      input("Video URL or YouTube ID", "videoUrl", videoValue, 'placeholder="YouTube URL/ID or direct MP4/WebM URL"') +
+      file("Upload video (MP4/WebM)", "videoFile", "video/mp4,video/webm") +
+      '<div class="content-editor-type-note"><span class="section-overline">PROJECT GUIDE FIELDS</span><p>For Project Guides, fill in the fields below using one line per row. Separate values with a vertical bar, as shown in each hint.</p></div>' +
+      area("Quick facts", "facts", rowsToText(d.facts || [], ["label", "value"]), 3, "One per line: Label | Value") +
+      input("Core idea heading", "principleTitle", principle.title || "", 'maxlength="180"') +
+      area("Core idea", "principleText", principle.text || "", 3) +
+      input("Formula (optional)", "principleFormula", principle.formula || "", 'maxlength="240"') +
+      area("Learning objectives", "objectives", rowsToText(d.objectives || [], [""]), 3, "One objective per line.") +
+      area("Design process", "designProcess", rowsToText(d.designProcess || [], ["title", "description"]), 4, "One per line: Step title | Explanation") +
+      area("Materials / parts", "materials", rowsToText(d.materials || [], ["name", "quantity", "notes"]), 5, "One per line: Part name | Quantity | Notes") +
+      area("Tools / equipment", "tools", rowsToText(d.tools || [], [""]), 3, "One tool per line.") +
+      area("Build steps", "steps", rowsToText(d.steps || [], ["title", "description", "why", "check"]), 7, "One per line: Step title | Instructions | Why | Check") +
+      area("Verification / tests", "verification", rowsToText(d.verification || [], ["title", "description"]), 4, "One per line: Test | Expected result") +
+      area("Troubleshooting", "troubleshooting", rowsToText(d.troubleshooting || [], ["problem", "cause", "fix"]), 4, "One per line: Problem | Likely cause | Fix") +
+      area("References / datasheets", "files", rowsToText(d.files || [], ["label", "href", "description"]), 3, "One per line: Link label | URL | Description") +
+      input("Related project slug (for schematics)", "relatedProjectSlug", d.relatedProjectSlug || "", 'placeholder="optional-project-slug"') +
+      area("Final notes", "notes", d.notes || "", 3) +
+      '<div class="content-editor-publish"><label><input type="checkbox" name="published"' + (row.published === true ? ' checked' : '') + '> Published — visible to all visitors</label><label><input type="checkbox" name="featured"' + (row.featured === true ? ' checked' : '') + '> Feature on homepage rotation (Spotlights)</label></div>' +
+      '</div><p class="content-editor-upload-note">Files are stored in the public site media bucket. Each file must be 50 MB or smaller. Do not upload private student information.</p>' +
+      '<div class="content-editor-actions"><button class="button button-accent" type="submit"><span aria-hidden="true">✓</span> Save content</button><button class="button button-outline" type="button" data-content-cancel>Cancel</button></div></form></section>';
+  }
+
+  function renderAdminContentManager() {
+    if (!isActiveAdmin()) return "";
+    const items = siteContent.slice().sort((a,b) => String(a.content_type).localeCompare(String(b.content_type)) || String(a.title).localeCompare(String(b.title)));
+    const label = type => type === "spotlight" ? "SPOTLIGHT" : type === "project" ? "PROJECT GUIDE" : "SCHEMATIC";
+    const list = items.length ? '<div class="site-content-list">' + items.map(row =>
+      '<div class="site-content-row"><div class="site-content-row-main"><span class="content-type-label">' + label(row.content_type) + '</span><strong>' + esc(row.title) + '</strong><small>/' + esc(row.slug) + '</small></div><div class="site-content-row-status"><span class="' + (row.published ? 'content-state-live' : 'content-state-draft') + '">' + (row.published ? 'Published' : 'Draft') + '</span>' + (row.featured ? '<span class="content-state-featured">Featured</span>' : '') + '</div><div class="site-content-row-actions"><button type="button" class="button button-outline" data-content-edit="' + esc(row.id) + '"><span aria-hidden="true">✎</span> Edit</button><button type="button" class="button button-danger" data-content-delete="' + esc(row.id) + '" aria-label="Delete ' + esc(row.title) + '"><span aria-hidden="true">×</span> Delete</button></div></div>'
+    ).join("") + '</div>' : '<div class="site-content-empty"><strong>No editable records yet.</strong><p>Import the current reference projects and schematics to start editing them here. You can also create a new spotlight, project guide, or schematic.</p></div>';
+    return '<section class="admin-console-section admin-site-content-manager" aria-labelledby="site-content-manager-title"><div class="admin-console-section-heading"><div><p class="section-overline">PUBLISHING WORKSPACE</p><h2 id="site-content-manager-title">Spotlights, projects & schematics</h2><p>Edit descriptions, add media, manage build instructions, and publish content without editing source files.</p></div><span class="admin-console-section-tag">ADMIN ONLY</span></div>' +
+      '<div class="site-content-toolbar"><button class="admin-primary-action" type="button" data-content-new="spotlight"><span aria-hidden="true">✦</span> New spotlight</button><button class="admin-secondary-action" type="button" data-content-new="project"><span aria-hidden="true">＋</span> New project guide</button><button class="admin-secondary-action" type="button" data-content-new="schematic"><span aria-hidden="true">⌁</span> New schematic</button><button class="admin-secondary-action" type="button" data-content-seed><span aria-hidden="true">↻</span> Import current references</button></div>' +
+      (siteContentError ? '<p class="account-error" role="alert">' + esc(siteContentError) + '</p>' : '') +
+      (siteContentLoading && !items.length ? '<p class="account-muted">Loading content records…</p>' : list) +
+      (contentEditorOpen ? renderContentEditorForm() : '') +
+      '<p class="admin-access-footnote"><span aria-hidden="true">ⓘ</span> Drafts are administrator-visible only. Publishing a record makes its text and attached media publicly accessible.</p></section>';
+  }
+
   function renderAdminDashboard(path){
     const activeUsers=adminUsers.filter(user=>user.is_active && user.email_confirmed).length;
     const activeEditors=adminUsers.filter(user=>user.is_active && user.email_confirmed && (user.role==="editor"||user.role==="admin")).length;
@@ -607,7 +683,8 @@
           '<p class="admin-access-footnote"><span aria-hidden="true">ⓘ</span> Removing a user deletes their sign-in account. Role and inventory permissions are enforced by the database, not just by these controls.</p>'+
         '</article>'+
       '</section>'+
-      '<section class="admin-system-note"><span aria-hidden="true">✓</span><div><strong>Shared data is live</strong><p>Inventory changes are saved centrally and propagate to the public catalog as well as signed-in sessions. Public visitors can read stock records; only active editors and administrators can change them.</p></div><a href="#/inventory">Review inventory ↗</a></section>'+
+      renderAdminContentManager() +
+      '<section class="admin-system-note"><span class="status-note-icon" aria-hidden="true">✓</span><div><strong>Shared data is live</strong><p>Inventory changes are saved centrally and propagate to the public catalog as well as signed-in sessions. Public visitors can read stock records; only active editors and administrators can change them.</p></div><a href="#/inventory">Review inventory ↗</a></section>'+
     '</div>';
   }
 
