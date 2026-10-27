@@ -5,7 +5,21 @@
   const navData = window.SHOP_NAVIGATION || [];
   const pages = window.SHOP_PAGES || {};
   const projects = window.SHOP_PROJECTS || [];
-  const inventory = window.SHOP_INVENTORY || [];
+  const demoInventory = window.SHOP_INVENTORY || [];
+  let inventory = demoInventory;
+  const supabaseConfig = window.BAYPATH_SUPABASE_CONFIG || {};
+  let supabaseClient = null;
+  let signedInUser = null;
+  let currentProfile = null;
+  let currentRole = null;
+  let databaseInventoryLoaded = false;
+  let inventoryLoadError = "";
+  let accountMessage = "";
+  let accountMessageKind = "info";
+  let adminUsers = [];
+  let adminUsersLoading = false;
+  let adminUsersError = "";
+  let supabaseInitError = "";
   const inventoryState = { query: "", category: "all", area: "all", stock: "all", sortBy: "name", sortDir: "asc", page: 1, pageSize: 50 };
   const app = document.getElementById("app");
   const topNav = document.getElementById("top-nav");
@@ -258,6 +272,146 @@
       return (inventoryState.sortDir==="desc"?-cmp:cmp)||String(a.id).localeCompare(String(b.id));
     });
   }
+
+  function canEditInventory(){ return Boolean(signedInUser && (currentRole === "editor" || currentRole === "admin")); }
+  function canDeleteInventory(){ return Boolean(signedInUser && currentRole === "admin"); }
+  function dbToInventory(row){
+    return {
+      id: row.legacy_id || row.id, dbId: row.id, legacyId: row.legacy_id || "",
+      recordType: row.record_type || "verified", partNumber: row.part_number || "",
+      name: row.name || "", manufacturer: row.manufacturer || "", category: row.category || "",
+      description: row.description || "",
+      location: { area: row.location_area || "", cabinet: row.location_cabinet || "", shelf: row.location_shelf || "", bin: row.location_bin || "" },
+      quantity: row.quantity == null ? null : Number(row.quantity), unit: row.unit || "pcs",
+      minimumQuantity: row.minimum_quantity == null ? 0 : Number(row.minimum_quantity),
+      condition: row.condition || "", supplier: row.supplier || "", datasheet: row.datasheet || "", notes: row.notes || "",
+      updatedAt: row.updated_at ? new Date(row.updated_at).toISOString().slice(0,10) : ""
+    };
+  }
+  async function refreshDatabaseInventory(){
+    if(!supabaseClient || !signedInUser){ inventory = demoInventory; databaseInventoryLoaded = false; return; }
+    inventoryLoadError = "";
+    const { data, error } = await supabaseClient.from("inventory_items").select("*").order("name", { ascending: true });
+    if(error){ inventoryLoadError = error.message || "Unable to load the inventory database."; databaseInventoryLoaded = false; return; }
+    inventory = (data || []).map(dbToInventory);
+    databaseInventoryLoaded = true;
+  }
+  async function loadAdminUsers(){
+    if(!supabaseClient || currentRole !== "admin"){ adminUsers = []; return; }
+    adminUsersLoading = true; adminUsersError = "";
+    if(pathNow() === "/account") render();
+    const { data, error } = await supabaseClient.functions.invoke("admin-users", { body: { action: "list" } });
+    adminUsersLoading = false;
+    if(error){ adminUsersError = error.message || "Could not load users. Check the Edge Function configuration."; adminUsers = []; }
+    else { adminUsers = Array.isArray(data && data.users) ? data.users : []; }
+    if(pathNow() === "/account") render();
+  }
+  async function syncAuthSession(session){
+    signedInUser = session && session.user ? session.user : null;
+    currentProfile = null; currentRole = null; adminUsers = []; adminUsersError = "";
+    if(signedInUser && supabaseClient){
+      const { data, error } = await supabaseClient.from("profiles").select("id, display_name, role").eq("id", signedInUser.id).maybeSingle();
+      if(error){ accountMessage = "Signed in, but the profile could not be loaded: " + error.message; accountMessageKind = "error"; }
+      else if(data){ currentProfile = data; currentRole = data.role; accountMessage = ""; }
+      else { accountMessage = "Your account exists, but its profile is missing. Ask an administrator to repair it."; accountMessageKind = "error"; }
+      await refreshDatabaseInventory();
+      updateAccountLink();
+      if(currentRole === "admin") await loadAdminUsers();
+    } else {
+      inventory = demoInventory; databaseInventoryLoaded = false; inventoryLoadError = ""; updateAccountLink();
+    }
+    render();
+  }
+  function updateAccountLink(){
+    const link = document.getElementById("account-link");
+    if(!link) return;
+    link.textContent = signedInUser ? (currentRole ? "Account · " + currentRole[0].toUpperCase() + currentRole.slice(1) : "Account") : "Sign in";
+    link.setAttribute("aria-label", signedInUser ? "Account and permissions" : "Sign in to Baypath Electronics");
+  }
+  function initSupabase(){
+    try{
+      if(!supabaseConfig.url || !supabaseConfig.publishableKey) throw new Error("Supabase project settings are missing.");
+      if(!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("The Supabase JavaScript library did not load. Check your connection and refresh.");
+      supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.publishableKey);
+      supabaseClient.auth.onAuthStateChange((_event, session) => {
+        window.setTimeout(() => { syncAuthSession(session).catch(error => { accountMessage = error.message || "Unable to sync account."; accountMessageKind = "error"; render(); }); }, 0);
+      });
+      supabaseClient.auth.getSession().then(({data}) => syncAuthSession(data.session)).catch(error => {
+        supabaseInitError = error.message || "Could not check your sign-in session."; render();
+      });
+    } catch(error){ supabaseInitError = error.message || "Supabase is not available."; updateAccountLink(); }
+  }
+  function renderInventoryEditorPanel(){
+    if(!canEditInventory()) return "";
+    return '<section class="inventory-editor-panel" id="inventory-editor-panel" hidden aria-labelledby="inventory-editor-title">' +
+      '<div class="inventory-editor-heading"><div><p class="section-overline">DATABASE EDITOR</p><h2 id="inventory-editor-title">Add inventory item</h2><p>Changes save to Supabase and are visible to authorized signed-in users.</p></div><button type="button" class="button button-outline" data-inventory-editor-cancel>Close</button></div>' +
+      '<form id="inventory-edit-form"><input type="hidden" name="dbId" value=""><div class="inventory-editor-grid">' +
+      '<label>Part number <span>*</span><input name="partNumber" required maxlength="120" placeholder="e.g. RES-1K-025W"></label>' +
+      '<label>Item name <span>*</span><input name="name" required maxlength="200" placeholder="e.g. 1 kΩ resistor, ¼ W"></label>' +
+      '<label>Category <span>*</span><input name="category" required maxlength="120" placeholder="e.g. Resistors"></label>' +
+      '<label>Manufacturer<input name="manufacturer" maxlength="160"></label>' +
+      '<label>Internal ID (optional)<input name="legacyId" maxlength="120" placeholder="Cabinet or stock code"></label>' +
+      '<label>Quantity<input name="quantity" type="number" min="0" step="0.001" placeholder="Leave blank if not counted"></label>' +
+      '<label>Unit<input name="unit" maxlength="40" value="pcs"></label>' +
+      '<label>Minimum stock<input name="minimumQuantity" type="number" min="0" step="0.001" value="0"></label>' +
+      '<label>Condition<input name="condition" maxlength="120" placeholder="New, used, needs testing…"></label>' +
+      '<label>Supplier<input name="supplier" maxlength="200"></label>' +
+      '<label>Storage area<input name="locationArea" maxlength="160" placeholder="e.g. Electronics Lab"></label>' +
+      '<label>Cabinet<input name="locationCabinet" maxlength="120"></label>' +
+      '<label>Shelf / drawer<input name="locationShelf" maxlength="120"></label>' +
+      '<label>Bin<input name="locationBin" maxlength="120"></label>' +
+      '<label>Datasheet URL<input name="datasheet" type="url" maxlength="1000" placeholder="https://…"></label>' +
+      '<label class="inventory-editor-wide">Description<textarea name="description" rows="2" maxlength="3000"></textarea></label>' +
+      '<label class="inventory-editor-wide">Notes<textarea name="notes" rows="2" maxlength="3000"></textarea></label></div>' +
+      '<div class="inventory-editor-actions"><p id="inventory-editor-message" role="status" aria-live="polite"></p><button type="button" class="button button-outline" data-inventory-editor-cancel>Cancel</button><button class="button button-accent" type="submit">Save inventory item</button></div></form></section>';
+  }
+  function showInventoryEditor(dbId){
+    const panel=document.getElementById("inventory-editor-panel"), form=document.getElementById("inventory-edit-form");
+    if(!panel || !form) return;
+    form.reset(); form.elements.dbId.value=""; form.elements.unit.value="pcs"; form.elements.minimumQuantity.value="0";
+    const item=dbId ? inventory.find(row=>row.dbId===dbId) : null;
+    const fields={
+      dbId:item?item.dbId:"",partNumber:item?item.partNumber:"",name:item?item.name:"",category:item?item.category:"",
+      manufacturer:item?item.manufacturer:"",legacyId:item?item.legacyId:"",quantity:item&&item.quantity!=null?item.quantity:"",
+      unit:item?item.unit:"pcs",minimumQuantity:item&&item.minimumQuantity!=null?item.minimumQuantity:0,condition:item?item.condition:"",
+      supplier:item?item.supplier:"",locationArea:item?(item.location||{}).area:"",locationCabinet:item?(item.location||{}).cabinet:"",
+      locationShelf:item?(item.location||{}).shelf:"",locationBin:item?(item.location||{}).bin:"",datasheet:item?item.datasheet:"",
+      description:item?item.description:"",notes:item?item.notes:""
+    };
+    Object.entries(fields).forEach(([name,value])=>{ if(form.elements[name]) form.elements[name].value=value==null?"":String(value); });
+    const title=document.getElementById("inventory-editor-title"); if(title) title.textContent=item?"Edit inventory item":"Add inventory item";
+    const message=document.getElementById("inventory-editor-message"); if(message) message.textContent="";
+    const submit=form.querySelector('button[type="submit"]'); if(submit) submit.textContent=item?"Save changes":"Save inventory item";
+    panel.hidden=false; panel.scrollIntoView({behavior:"smooth",block:"start"}); form.elements.partNumber.focus();
+  }
+  function renderAdminUsers(){
+    if(adminUsersLoading) return '<p class="account-muted">Loading accounts…</p>';
+    if(adminUsersError) return '<p class="account-error" role="alert">'+esc(adminUsersError)+'</p><button class="button button-outline" type="button" data-admin-users-refresh>Retry</button>';
+    if(!adminUsers.length) return '<p class="account-muted">No user profiles found yet.</p>';
+    return '<div class="admin-user-list">'+adminUsers.map(user=>
+      '<div class="admin-user-row"><div class="admin-user-identity"><strong>'+esc(user.display_name||user.email||"Unnamed user")+'</strong><span>'+esc(user.email||"Email unavailable")+'</span><small>'+esc(user.id)+'</small></div>' +
+      '<label class="admin-role-control"><span>Role</span><select data-user-role="'+esc(user.id)+'"><option value="viewer"'+(user.role==="viewer"?" selected":"")+'>Viewer</option><option value="editor"'+(user.role==="editor"?" selected":"")+'>Inventory editor</option><option value="admin"'+(user.role==="admin"?" selected":"")+'>Administrator</option></select></label>' +
+      '<div class="admin-user-actions"><button class="button button-outline" type="button" data-user-role-save="'+esc(user.id)+'">Save role</button>'+(user.id!== (signedInUser&&signedInUser.id)?'<button class="button button-danger" type="button" data-user-delete="'+esc(user.id)+'">Remove</button>':'<span class="account-muted">You</span>')+'</div></div>'
+    ).join("")+'</div>';
+  }
+  function renderAccountPage(path){
+    const roleLabel=currentRole==="admin"?"Administrator":currentRole==="editor"?"Inventory editor":currentRole==="viewer"?"Viewer":"No role assigned";
+    if(!supabaseClient) return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / SIGN IN</p><h1>Account access</h1><p>Sign-in is currently unavailable.</p></div></header><div class="auth-card"><p class="account-error">'+esc(supabaseInitError||"Supabase configuration could not be loaded.")+'</p></div></div>';
+    if(!signedInUser){
+      return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / SIGN IN</p><h1>Sign in to Electronics</h1><p>Sign in to view the live inventory database. Inventory editing and account management are role-restricted.</p></div></header>' +
+        '<div class="auth-card"><div class="auth-card-heading"><span class="auth-icon">↪</span><div><h2>Sign in</h2><p>Use the account created in Supabase Authentication.</p></div></div>' +
+        (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+
+        '<form id="sign-in-form" class="auth-form"><label>Email address<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-accent" type="submit">Sign in</button><p class="account-muted">Accounts are created by the site administrator. If you need access, ask the administrator for an invitation.</p></form></div></div>';
+    }
+    return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / ACCESS CONTROL</p><h1>Account</h1><p>Manage your session and review your permission level.</p></div></header>' +
+      '<section class="account-summary"><div class="account-avatar">'+esc((currentProfile&&currentProfile.display_name||signedInUser.email||"U").slice(0,1).toUpperCase())+'</div><div class="account-summary-copy"><h2>'+esc(currentProfile&&currentProfile.display_name||signedInUser.email)+'</h2><p>'+esc(signedInUser.email||"")+'</p><span class="account-role">'+esc(roleLabel)+'</span></div><button class="button button-outline" type="button" data-auth-signout>Sign out</button></section>' +
+      (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+
+      (currentRole==="admin" ? '<section class="account-admin"><div class="account-section-heading"><div><p class="section-overline">ADMINISTRATOR TOOLS</p><h2>Invite a user</h2><p>Send an email invitation and choose the least-privileged role they need.</p></div></div><form id="admin-invite-form" class="admin-invite-form"><label>Name (optional)<input name="displayName" maxlength="120" placeholder="Person’s name"></label><label>Email address<input name="email" type="email" required placeholder="person@example.com"></label><label>Role<select name="role"><option value="viewer">Viewer — view inventory</option><option value="editor">Inventory editor — add and edit items</option><option value="admin">Administrator — manage users and inventory</option></select></label><button class="button button-accent" type="submit">Send invitation</button><p id="admin-invite-message" role="status" aria-live="polite"></p></form>' +
+      '<div class="account-section-heading account-users-heading"><div><p class="section-overline">ACCESS LIST</p><h2>Users and permissions</h2><p>Role updates apply to database access. Removing a user deletes their Supabase Auth account.</p></div><button class="button button-outline" type="button" data-admin-users-refresh>Refresh users</button></div><div id="admin-users-container">'+renderAdminUsers()+'</div></section>' :
+      '<section class="account-permission-note"><h2>Your permissions</h2><p>'+(currentRole==="editor"?"You can view, add, and edit inventory records. Only administrators can delete records or manage user accounts.":currentRole==="viewer"?"You can view the live inventory database. Ask an administrator if you need editing access.":"Your account has no recognized role. Contact an administrator.")+'</p></section>')+
+      '</div>';
+  }
+
   function inventoryTableRows(rows){
     if(!rows.length)return '<tr><td colspan="7"><div class="inventory-no-results"><strong>No matching inventory records.</strong><p>Try a shorter search, clear one of the filters, or reset the catalog view.</p><button class="button button-outline" type="button" data-inventory-reset>Reset filters</button></div></td></tr>';
     return rows.map(item=>{
