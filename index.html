@@ -7,13 +7,15 @@
   <meta name="description" content="Baypath RVTHS Electronics — a clear reference for projects, schematics, inventory, and class resources.">
   <title>Electronics — Baypath RVTHS</title>
   <link rel="icon" href="assets/images/mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261026-appearance-v9">
-  <script defer src="data/site-config.js?v=20261026-appearance-v9"></script>
-  <script defer src="data/navigation.js?v=20261026-appearance-v9"></script>
-  <script defer src="data/pages.js?v=20261026-appearance-v9"></script>
-  <script defer src="data/projects.js?v=20261026-appearance-v9"></script>
-  <script defer src="data/inventory.js?v=20261026-appearance-v9"></script>
-  <script defer src="assets/js/app.js?v=20261026-appearance-v9"></script>
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261027-supabase-v1">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.min.js"></script>
+  <script defer src="data/supabase-config.js?v=20261027-supabase-v1"></script>
+  <script defer src="data/site-config.js?v=20261027-supabase-v1"></script>
+  <script defer src="data/navigation.js?v=20261027-supabase-v1"></script>
+  <script defer src="data/pages.js?v=20261027-supabase-v1"></script>
+  <script defer src="data/projects.js?v=20261027-supabase-v1"></script>
+  <script defer src="data/inventory.js?v=20261027-supabase-v1"></script>
+  <script defer src="assets/js/app.js?v=20261027-supabase-v1"></script>
 </head>
 <body>
   <a class="skip" href="#main-content">Skip to content</a>
@@ -56,6 +58,7 @@
             <kbd class="search-shortcut">/</kbd>
             <div class="search-results" id="search-results" role="status" aria-live="polite" hidden></div>
           </div>
+          <a class="account-link" id="account-link" href="#/account">Sign in</a>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Toggle dark mode" title="Dark mode is off. Select to use dark mode"><span id="theme-toggle-label">Dark mode</span></button>
         </div>
       </header>
