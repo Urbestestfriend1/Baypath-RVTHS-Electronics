@@ -5,8 +5,7 @@
   const navData = window.SHOP_NAVIGATION || [];
   const pages = window.SHOP_PAGES || {};
   const projects = window.SHOP_PROJECTS || [];
-  const demoInventory = window.SHOP_INVENTORY || [];
-  let inventory = demoInventory;
+  let inventory = [];
   const supabaseConfig = window.BAYPATH_SUPABASE_CONFIG || {};
   let supabaseClient = null;
   let signedInUser = null;
@@ -289,10 +288,10 @@
     };
   }
   async function refreshDatabaseInventory(){
-    if(!supabaseClient || !signedInUser || !(currentProfile && currentProfile.is_active)){ inventory = demoInventory; databaseInventoryLoaded = false; inventoryLoadError = ""; return; }
+    if(!supabaseClient){ inventory = []; databaseInventoryLoaded = false; inventoryLoadError = "Supabase is not available."; return; }
     inventoryLoadError = "";
     const { data, error } = await supabaseClient.from("inventory_items").select("*").order("name", { ascending: true });
-    if(error){ inventoryLoadError = error.message || "Unable to load the inventory database."; databaseInventoryLoaded = false; return; }
+    if(error){ inventory = []; inventoryLoadError = error.message || "Unable to load the shared inventory database."; databaseInventoryLoaded = false; return; }
     inventory = (data || []).map(dbToInventory);
     databaseInventoryLoaded = true;
   }
@@ -318,7 +317,9 @@
       updateAccountLink();
       if(currentRole === "admin" && currentProfile && currentProfile.is_active) await loadAdminUsers();
     } else {
-      inventory = demoInventory; databaseInventoryLoaded = false; inventoryLoadError = ""; updateAccountLink();
+      currentProfile = null; currentRole = null;
+      updateAccountLink();
+      await refreshDatabaseInventory();
     }
     render();
   }
@@ -333,6 +334,12 @@
       if(!supabaseConfig.url || !supabaseConfig.publishableKey) throw new Error("Supabase project settings are missing.");
       if(!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("The Supabase JavaScript library did not load. Check your connection and refresh.");
       supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.publishableKey);
+      supabaseClient.channel("shared-inventory-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "inventory_items" }, async () => {
+          await refreshDatabaseInventory();
+          if(pathNow() === "/inventory") { inventoryState.page = 1; render(); }
+        })
+        .subscribe();
       supabaseClient.auth.onAuthStateChange((_event, session) => {
         window.setTimeout(() => { syncAuthSession(session).catch(error => { accountMessage = error.message || "Unable to sync account."; accountMessageKind = "error"; render(); }); }, 0);
       });
@@ -394,6 +401,47 @@
       '<div class="admin-user-actions"><button class="button button-outline" type="button" data-user-role-save="'+esc(user.id)+'">Save role</button>'+(user.id!== (signedInUser&&signedInUser.id)?'<button class="button button-danger" type="button" data-user-delete="'+esc(user.id)+'">Remove</button>':'<span class="account-muted">You</span>')+'</div></div>'
     ).join("")+'</div>';
   }
+
+  function renderAdminDashboard(path){
+    const activeUsers=adminUsers.filter(user=>user.is_active).length;
+    const activeEditors=adminUsers.filter(user=>user.is_active && (user.role==="editor"||user.role==="admin")).length;
+    const displayName=currentProfile&&currentProfile.display_name||signedInUser.email||"Administrator";
+    return '<div class="page-shell admin-dashboard">'+breadcrumbs(path)+
+      '<header class="admin-console-hero"><div class="admin-console-hero-copy">'+
+        '<p class="admin-console-kicker"><span class="admin-console-kicker-dot"></span> CONTROL ROOM / ACCESS MANAGEMENT</p>'+
+        '<h1>Admin console<span>.</span></h1>'+
+        '<p>Manage who can edit the catalog and keep the shared inventory accurate for everyone.</p>'+
+        '<div class="admin-console-user"><span class="admin-console-avatar">'+esc(displayName.slice(0,1).toUpperCase())+'</span><span><strong>'+esc(displayName)+'</strong><small>'+esc(signedInUser.email||'')+' · Administrator</small></span></div>'+
+      '</div><div class="admin-console-hero-side"><span class="admin-console-status"><span></span> Administrator access</span><button class="admin-console-signout" type="button" data-auth-signout><span aria-hidden="true">↗</span> Sign out</button><span class="admin-console-hero-note">Changes apply to the central inventory database.</span></div></header>'+
+      (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':'')+
+      '<section class="admin-stat-grid" aria-label="Administration overview">'+
+        '<article class="admin-stat-card admin-stat-card-inventory"><span class="admin-stat-label">Shared inventory</span><strong>'+inventory.length.toLocaleString("en-US")+'</strong><small>'+(databaseInventoryLoaded?'Live database records':'Loading shared records')+'</small><a href="#/inventory">Open inventory <span aria-hidden="true">↗</span></a></article>'+
+        '<article class="admin-stat-card"><span class="admin-stat-label">User accounts</span><strong>'+adminUsers.length.toLocaleString("en-US")+'</strong><small>'+activeUsers.toLocaleString("en-US")+' active account'+(activeUsers===1?'':'s')+'</small><span class="admin-stat-foot">Across all permission levels</span></article>'+
+        '<article class="admin-stat-card"><span class="admin-stat-label">Editors & admins</span><strong>'+activeEditors.toLocaleString("en-US")+'</strong><small>Can change inventory records</small><span class="admin-stat-foot">Viewer access stays read-only</span></article>'+
+      '</section>'+
+      '<div class="admin-console-section-heading"><div><p class="section-overline">PEOPLE & PERMISSIONS</p><h2>Manage access</h2><p>Invite trusted users and grant only the permission level they need.</p></div><span class="admin-console-section-tag">ROLE-BASED ACCESS</span></div>'+
+      '<section class="admin-console-grid">'+
+        '<article class="admin-console-panel admin-console-invite"><div class="admin-panel-icon" aria-hidden="true">＋</div>'+
+          '<div class="admin-panel-heading"><p class="admin-panel-eyebrow">ADD A TEAM MEMBER</p><h3>Invite a user</h3><p>They will receive an invitation email and can sign in after completing it.</p></div>'+
+          '<form id="admin-invite-form" class="admin-invite-form admin-invite-form-dashboard">'+
+            '<label>Name <span>Optional</span><input name="displayName" maxlength="120" placeholder="Person’s name"></label>'+
+            '<label>Email address<input name="email" type="email" required placeholder="person@example.com"></label>'+
+            '<label>Permission level<select name="role"><option value="viewer">Viewer — can view inventory</option><option value="editor">Inventory editor — add and edit items</option><option value="admin">Administrator — manage users too</option></select></label>'+
+            '<button class="admin-primary-action" type="submit"><span aria-hidden="true">＋</span> Send invitation</button>'+
+            '<p id="admin-invite-message" role="status" aria-live="polite"></p>'+
+          '</form>'+
+          '<div class="admin-role-legend"><div><span class="role-dot role-viewer"></span><span><strong>Viewer</strong><small>Read-only inventory access</small></span></div><div><span class="role-dot role-editor"></span><span><strong>Inventory editor</strong><small>Add and update records</small></span></div><div><span class="role-dot role-admin"></span><span><strong>Administrator</strong><small>Manage users and delete records</small></span></div></div>'+
+        '</article>'+
+        '<article class="admin-console-panel admin-console-access"><div class="admin-access-heading"><div><p class="admin-panel-eyebrow">CURRENT ACCESS</p><h3>Users & permissions</h3><p>Update a role, or remove access for a former team member.</p></div><button class="admin-secondary-action" type="button" data-admin-users-refresh><span aria-hidden="true">↻</span> Refresh</button></div>'+
+          '<div class="admin-access-table-heading"><span>PERSON</span><span>ROLE</span><span>ACTIONS</span></div>'+
+          '<div id="admin-users-container" class="admin-users-container">'+renderAdminUsers()+'</div>'+
+          '<p class="admin-access-footnote"><span aria-hidden="true">ⓘ</span> Removing a user deletes their sign-in account. Role and inventory permissions are enforced by the database, not just by these controls.</p>'+
+        '</article>'+
+      '</section>'+
+      '<section class="admin-system-note"><span aria-hidden="true">✓</span><div><strong>Shared data is live</strong><p>Inventory changes are saved centrally and propagate to the public catalog as well as signed-in sessions. Public visitors can read stock records; only active editors and administrators can change them.</p></div><a href="#/inventory">Review inventory ↗</a></section>'+
+    '</div>';
+  }
+
   function renderAccountPage(path){
     const roleLabel=!(currentProfile&&currentProfile.is_active)?"Pending activation":currentRole==="admin"?"Administrator":currentRole==="editor"?"Inventory editor":currentRole==="viewer"?"Viewer":"No role assigned";
     if(!supabaseClient) return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / SIGN IN</p><h1>Account access</h1><p>Sign-in is currently unavailable.</p></div></header><div class="auth-card"><p class="account-error">'+esc(supabaseInitError||"Supabase configuration could not be loaded.")+'</p></div></div>';
@@ -403,6 +451,7 @@
         (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+
         '<form id="sign-in-form" class="auth-form"><label>Email address<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-accent" type="submit">Sign in</button><p class="account-muted">Accounts are created by the site administrator. If you need access, ask the administrator for an invitation.</p></form></div></div>';
     }
+    if(currentRole==="admin" && currentProfile && currentProfile.is_active) return renderAdminDashboard(path);
     return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / ACCESS CONTROL</p><h1>Account</h1><p>Manage your session and review your permission level.</p></div></header>' +
       '<section class="account-summary"><div class="account-avatar">'+esc((currentProfile&&currentProfile.display_name||signedInUser.email||"U").slice(0,1).toUpperCase())+'</div><div class="account-summary-copy"><h2>'+esc(currentProfile&&currentProfile.display_name||signedInUser.email)+'</h2><p>'+esc(signedInUser.email||"")+'</p><span class="account-role">'+esc(roleLabel)+'</span></div><button class="button button-outline" type="button" data-auth-signout>Sign out</button></section>' +
       (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+
@@ -466,9 +515,9 @@
       '<p>A searchable, structured catalog for electronic components, wiring, hand tools, test equipment, consumables, and reusable shop assets. Search by the part you know, filter by where it lives, and sort the list to review quantities or identify records that need attention. As the catalog grows, filters narrow the full dataset while pagination keeps each view manageable.</p></div>'+
       '<div class="inventory-heading-side"><span class="inventory-heading-icon">▦</span><strong>MASTER STOCK LIST</strong><small>Part → Location → Quantity → Notes</small><a href="#inventory-catalog">Browse the catalog ↓</a></div></header>'+
       renderInventoryEditorPanel()+
-      (signedInUser && currentProfile && currentProfile.is_active ? '<aside class="inventory-auth-notice"><strong>Connected inventory database</strong><p>You are signed in. The table shows saved Supabase records, not the public demo rows.</p></aside>' : '<aside class="inventory-auth-notice"><strong>Sign in to access live stock records</strong><p>This public view uses demonstration records only. <a href="#/account">Sign in</a> to access the protected database; editors can add and update records.</p></aside>')+
+      '<aside class="inventory-auth-notice"><strong>Shared inventory database</strong><p>This is the same live catalog for everyone, whether signed in or not. Authorized editors’ changes appear here automatically. <a href="#/account">Sign in</a> to manage records if you have editing permissions.</p></aside>'+
       (inventoryLoadError ? '<aside class="account-error" role="alert">Could not load live inventory: '+esc(inventoryLoadError)+'</aside>' : '')+
-      (isExample?'<aside class="inventory-demo-notice"><span class="demo-notice-icon">!</span><div><strong>Demonstration data — not verified Baypath stock</strong><p>The rows below are examples that show how the catalog works. Quantities, manufacturers, and storage locations are fictional sample values. Replace or remove these records in <code>data/inventory.js</code> before using the table to locate real parts or make purchasing decisions.</p></div></aside>':"")+
+      (databaseInventoryLoaded && inventory.length===0 ? '<aside class="inventory-auth-notice"><strong>No stock records yet</strong><p>The shared database is currently empty. An authorized inventory editor can add the first item.</p></aside>' : '')+
       '<section class="inventory-summary-grid" aria-label="Inventory summary"><div class="inventory-summary-card"><span>Catalog records</span><strong>'+inventory.length.toLocaleString("en-US")+'</strong><small>'+(isExample?"Example records loaded":"Records in the catalog")+'</small></div>'+
       '<div class="inventory-summary-card"><span>Categories</span><strong>'+categories.length.toString().padStart(2,"0")+'</strong><small>Types of item listed</small></div>'+
       '<div class="inventory-summary-card"><span>Low stock</span><strong>'+(isExample?"—":low.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"At or below minimum quantity")+'</small></div>'+
@@ -485,7 +534,7 @@
       '<label><span>Stock status</span><select id="inventory-stock" aria-label="Filter by stock status"><option value="all"'+(inventoryState.stock==="all"?" selected":"")+'>All statuses</option><option value="in"'+(inventoryState.stock==="in"?" selected":"")+'>In stock</option><option value="low"'+(inventoryState.stock==="low"?" selected":"")+'>Low stock</option><option value="out"'+(inventoryState.stock==="out"?" selected":"")+'>Out of stock</option><option value="unknown"'+(inventoryState.stock==="unknown"?" selected":"")+'>Count needed</option></select></label></div>'+
       '<div class="inventory-results-strip"><span class="inventory-live-dot"></span><span id="inventory-live-summary" aria-live="polite">Loading catalog results</span><span class="inventory-strip-note">Counts are shown with their units and minimum restock levels.</span></div><div id="inventory-results" aria-live="polite"></div>'+
       '<div class="inventory-field-guide"><div><span class="field-guide-mark">01</span><div><strong>Part number</strong><p>Use a consistent internal ID, manufacturer SKU, or other unique identifier. Keep it stable when an item is moved to another shelf.</p></div></div><div><span class="field-guide-mark">02</span><div><strong>Storage location</strong><p>Record the area, cabinet, shelf or drawer, and bin. Make the location specific enough that someone unfamiliar with the list can find the item without guessing.</p></div></div><div><span class="field-guide-mark">03</span><div><strong>Quantity & minimum</strong><p>Record the counted amount and the level that should trigger a restock review. Use a consistent unit such as pcs, sets, reels, or units.</p></div></div></div></section>'+
-      (signedInUser && currentProfile && currentProfile.is_active ? '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>Database-backed inventory.</strong><p>When signed in, inventory edits are saved to Supabase. Use a consistent part number and count physical stock before relying on quantities.</p></div></aside>' : '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>Keep counts trustworthy.</strong><p>The public catalog view uses demonstration rows only. Sign in for database-backed stock records and persistent editing.</p></div></aside>')+'</div>';
+      '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>One shared source of truth.</strong><p>Records are stored centrally in Supabase, not in this browser. Use a consistent part number and verify physical counts before relying on quantities. This page listens for changes so the catalog can refresh automatically.</p></div></aside></div>';
   }
 
   function renderProjectGallery(path) {
