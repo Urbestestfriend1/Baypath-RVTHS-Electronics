@@ -175,3 +175,12 @@ Edit `data/projects.js`. Projects marked `featured: true` rotate in the home-pag
 ## Replacing website images
 
 All current website image assets live in `assets/images/` as PNG files. To replace an image without changing code, upload a new PNG using the same filename and dimensions/aspect ratio where practical. The image references are in `data/projects.js`, `data/pages.js`, `data/site-config.js`, and `index.html`. Keep transparent backgrounds for marks/icons where applicable.
+
+
+## Creator Spotlights (separate from build guides)
+
+Add showcase entries in `data/spotlights.js`. The homepage chooses a published spotlight marked `featured: true` and rotates among multiple featured entries by week. Set `published: true` only when creator permission/credit, summary, story, contribution, image, and all included media are ready. The dedicated `#/spotlights/<slug>` page is for the finished creation and its impact; it does not render tutorial assembly steps.
+
+Recommended fields: `slug`, `published`, `featured`, `title`, `creatorName`, `classYear`, `category`, `dateLabel`, `summary`, `story`, `contribution`, `highlights`, `featuredImage`, `featuredImageAlt`, optional `gallery`, and optional `videoId`.
+
+For a video, set `videoId` to the 11-character YouTube video ID (not the full URL). The site embeds it using YouTube's privacy-enhanced `youtube-nocookie.com` player. Leave the field out if there is no approved video.

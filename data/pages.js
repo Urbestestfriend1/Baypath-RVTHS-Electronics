@@ -82,6 +82,12 @@ window.SHOP_PAGES = {
     description: "A searchable master catalog for electronic components, wiring, connectors, hand tools, test equipment, consumables, and reusable shop assets. Each record can hold a part number, manufacturer, category, description, notes, quantity and unit, minimum stock level, condition, supplier, and a structured storage path. Search, filters, sorting, and pagination are designed to keep a very large list usable as it grows. The current starter rows are examples, not a verified count of Baypath stock.",
     sections: []
   },
+  "/spotlights": {
+    eyebrow: "Creator Showcase",
+    title: "Spotlights",
+    description: "Student-built creations and useful technical contributions, presented with creator credit, context, results, photos, and video when available. These showcases celebrate the finished work; build instructions live separately in the project guides.",
+    sections: []
+  },
   "/resources": {
     eyebrow: "Reference / Class Material",
     title: "Tools, safety & shop references",

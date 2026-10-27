@@ -7,6 +7,7 @@ window.SHOP_NAVIGATION = [
   { label: "Home", path: "/", icon: "⌂" },
   { label: "Inventory", path: "/inventory", icon: "▦" },
   { label: "Projects", path: "/projects", icon: "◇" },
+  { label: "Spotlights", path: "/spotlights", icon: "✦" },
   { label: "Schematics", path: "/schematics", icon: "▤", children: [
     { label: "Freshman", path: "/schematics/freshman", children: [
       { label: "Projects", path: "/schematics/freshman/projects" }

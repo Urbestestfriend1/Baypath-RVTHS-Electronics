@@ -5,6 +5,7 @@
   const navData = window.SHOP_NAVIGATION || [];
   const pages = window.SHOP_PAGES || {};
   const projects = window.SHOP_PROJECTS || [];
+  const spotlights = window.SHOP_SPOTLIGHTS || [];
   let inventory = [];
   const supabaseConfig = window.BAYPATH_SUPABASE_CONFIG || {};
   let supabaseClient = null;
@@ -60,6 +61,23 @@
     try { slug = decodeURIComponent(slug); } catch (_) {}
     return projects.find(project => project.slug === slug) || null;
   }
+  const spotlightPath = spotlight => "/spotlights/" + spotlight.slug;
+  function spotlightFor(path) {
+    const match = path.match(/^\/spotlights\/([^/]+)$/);
+    if (!match) return null;
+    let slug = match[1];
+    try { slug = decodeURIComponent(slug); } catch (_) {}
+    return spotlights.find(item => item.slug === slug && item.published === true) || null;
+  }
+  function publishedSpotlights() {
+    return spotlights.filter(item => item.published === true && item.slug && item.title);
+  }
+  function youtubeEmbed(videoId, title) {
+    const id = String(videoId || "").trim();
+    if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return "";
+    return '<section class="spotlight-block spotlight-video-block"><div class="spotlight-block-heading"><p class="section-overline">VIDEO</p><h2>Watch the creation</h2></div>' +
+      '<div class="spotlight-video"><iframe src="https://www.youtube-nocookie.com/embed/' + id + '" title="' + esc(title || "Creator spotlight video") + '" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></section>';
+  }
   function setTheme() {
     const theme = cfg.theme || {};
     const variables = {
@@ -114,12 +132,16 @@
       .sort((a, b) => b.path.length - a.path.length)[0] || null;
   }
 
-  function renderContext(path, project) {
+  function renderContext(path, project, spotlight) {
     if (path === "/") { contextNav.hidden = true; contextNav.innerHTML = ""; return; }
     contextNav.hidden = false;
     let root = topSection(path);
     if (!root) { contextNav.innerHTML = ""; contextNav.hidden = true; return; }
 
+    if (spotlight) {
+      contextNav.innerHTML = '<div class="context-inner"><span class="context-label">SPOTLIGHTS</span><a href="#/spotlights">All spotlights</a><span class="context-current">' + esc(spotlight.title) + '</span></div>';
+      return;
+    }
     if (project) {
       contextNav.innerHTML = '<div class="context-inner"><span class="context-label">PROJECTS</span><a href="#/projects">All projects</a><span class="context-current">' + esc(project.title) + '</span></div>';
       return;
@@ -201,26 +223,34 @@
       '<div class="library-card-art"><img src="' + esc(card.image) + '" alt="' + esc(card.imageAlt || "") + '" loading="lazy"><span class="library-card-index">' + String(index + 1).padStart(2, "0") + '</span></div>' +
       '<div class="library-card-copy"><span class="library-card-eyebrow">' + esc(card.eyebrow || "LIBRARY") + '</span><h3>' + esc(card.title) + '</h3><p>' + esc(card.path === "/inventory" ? inventoryDescription : card.description || "") + '</p><span class="library-card-link">' + esc(card.linkLabel || "Open section") + '<b>↗</b></span></div></a>'
     ).join("");
-    const featured = projects.filter(project => project.featured && !project.template);
-    const weeklyPool = featured.length ? featured : projects.filter(project => !project.template);
+    const liveSpotlights = publishedSpotlights();
+    const spotlightPool = liveSpotlights.filter(item => item.featured);
+    const weeklyPool = spotlightPool.length ? spotlightPool : liveSpotlights;
     const now = new Date();
     const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
     const weekStart = utcMidnight - ((new Date(utcMidnight).getUTCDay() + 6) % 7) * 86400000;
     const weekIndex = Math.floor(weekStart / (7 * 86400000));
-    const weeklyProject = weeklyPool.length
+    const weeklySpotlight = weeklyPool.length
       ? weeklyPool[((weekIndex % weeklyPool.length) + weeklyPool.length) % weeklyPool.length]
       : null;
-    const weeklyFeatureBanner = weeklyProject
-      ? '<section class="weekly-featured" aria-labelledby="weekly-featured-title">' +
-        '<a class="weekly-featured-image" href="' + href(projectPath(weeklyProject)) + '" aria-label="Open ' + esc(weeklyProject.title || "featured project") + '">' +
-        '<img src="' + esc(weeklyProject.featuredImage || "assets/images/project.png") + '" alt="' + esc(weeklyProject.featuredImageAlt || weeklyProject.title || "Featured electronics project") + '">' +
-        '<span class="weekly-featured-image-label">PROJECT SPOTLIGHT / WEEKLY</span></a>' +
-        '<div class="weekly-featured-copy"><p class="section-overline">FEATURED PROJECT THIS WEEK</p>' +
-        '<h2 id="weekly-featured-title">' + esc(weeklyProject.title || "Featured project") + '</h2>' +
-        '<p class="weekly-featured-byline">Project contributor <strong>' + esc(weeklyProject.featuredBy || weeklyProject.author || "Contributor credit pending") + '</strong></p>' +
-        '<p class="weekly-featured-description">' + esc(weeklyProject.summary || weeklyProject.description || "Project details will be added soon.") + '</p>' +
-        '<a class="button button-accent" href="' + href(projectPath(weeklyProject)) + '">Explore this project <span class="button-end">↗</span></a></div></section>'
-      : "";
+    const weeklyFeatureBanner = weeklySpotlight
+      ? '<section class="weekly-spotlight" aria-labelledby="weekly-spotlight-title">' +
+        '<a class="weekly-spotlight-image" href="' + href(spotlightPath(weeklySpotlight)) + '" aria-label="View spotlight: ' + esc(weeklySpotlight.title) + '">' +
+        '<img src="' + esc(weeklySpotlight.featuredImage || "assets/images/workshop-banner.png") + '" alt="' + esc(weeklySpotlight.featuredImageAlt || weeklySpotlight.title) + '">' +
+        '<span class="weekly-spotlight-image-label">CREATOR SPOTLIGHT / THIS WEEK</span></a>' +
+        '<div class="weekly-spotlight-copy"><p class="section-overline">FEATURED CREATION THIS WEEK</p>' +
+        '<h2 id="weekly-spotlight-title">' + esc(weeklySpotlight.title) + '</h2>' +
+        '<p class="weekly-spotlight-byline">Created by <strong>' + esc(weeklySpotlight.creatorName || "Contributor credit pending") + '</strong>' +
+        (weeklySpotlight.classYear ? ' <span>· ' + esc(weeklySpotlight.classYear) + '</span>' : '') + '</p>' +
+        '<p class="weekly-spotlight-description">' + esc(weeklySpotlight.summary || "") + '</p>' +
+        '<a class="text-link weekly-spotlight-link" href="' + href(spotlightPath(weeklySpotlight)) + '">See the creation, story and media <span>↗</span></a></div></section>'
+      : '<section class="weekly-spotlight weekly-spotlight-empty" aria-labelledby="weekly-spotlight-title">' +
+        '<div class="weekly-spotlight-empty-image"><img src="assets/images/workshop-banner.png" alt="Illustration of an electronics workshop bench">' +
+        '<span class="weekly-spotlight-image-label">CREATOR SPOTLIGHT</span></div>' +
+        '<div class="weekly-spotlight-copy"><p class="section-overline">FEATURED CREATION THIS WEEK</p>' +
+        '<h2 id="weekly-spotlight-title">The next spotlight is being prepared.</h2>' +
+        '<p class="weekly-spotlight-description">This space is reserved for a real student creation or technical contribution, with creator credit, the story behind it, notable details, photos, and an optional video. No how-to steps—just the work and why it matters.</p>' +
+        '<a class="text-link weekly-spotlight-link" href="#/spotlights">Explore creator spotlights <span>↗</span></a></div></section>';
     const displayProjects = (featured.length ? featured : projects.filter(project => !project.template)).slice(0, 2);
     const featuredCards = displayProjects.length
       ? '<div class="featured-projects">' + displayProjects.map(projectCard).join("") + '</div>'
@@ -241,9 +271,9 @@
       '<div class="metric-card metric-card-inventory"><span class="metric-icon">▦</span><span class="metric-label">INVENTORY CATALOG</span><strong>' + exampleCount.padStart(2,"0") + '</strong><small>' + (exampleInventory ? "Demonstration rows — not verified stock" : "Catalog line items") + '</small></div>' +
       '<div class="metric-card"><span class="metric-icon">⌁</span><span class="metric-label">PART CATEGORIES</span><strong>' + categoryCount.toString().padStart(2,"0") + '</strong><small>' + (exampleInventory ? "Example categories" : "Ways to narrow the catalog") + '</small></div>' +
       '</section>' +
-      '<section class="dashboard-section"><div class="dashboard-section-heading"><div><p class="section-overline">THE WORKSPACE</p><h2>Go straight to what you need.</h2><p>Each section has a clear job. Drawings stay separate from assembly instructions, and inventory records stay separate from project write-ups.</p></div><span class="section-side-label">LIBRARY INDEX / 01</span></div>' +
+      '<section class="dashboard-section"><div class="dashboard-section-heading"><div><p class="section-overline">THE REFERENCE LIBRARY</p><h2>Go straight to what you need.</h2><p>Each section has a clear job. Drawings stay separate from assembly instructions, and inventory records stay separate from project write-ups.</p></div><span class="section-side-label">LIBRARY INDEX / 01</span></div>' +
       '<div class="library-grid">' + cards + '</div></section>' +
-      '<section class="dashboard-section dashboard-project-section"><div class="dashboard-section-heading"><div><p class="section-overline">FROM THE PROJECT BENCH</p><h2>Build notes with a clear path.</h2><p>Start with the brief, understand the design choices, follow the assembly steps, then verify the finished circuit. Each reference build keeps its drawing, parts, procedure, and troubleshooting notes together.</p></div><a href="#/projects" class="text-link">View all projects ↗</a></div>' +
+      '<section class="dashboard-section dashboard-project-section"><div class="dashboard-section-heading"><div><p class="section-overline">PROJECT GUIDES & REFERENCE BUILDS</p><h2>Guides for learning and building.</h2><p>These pages are separate from Creator Spotlights: use them when you need circuit drawings, parts lists, assembly steps, and troubleshooting guidance.</p></div><a href="#/projects" class="text-link">View all projects ↗</a></div>' +
       featuredCards + '</section>' +
       '<section class="workflow-strip"><div class="workflow-strip-heading"><span class="workflow-chip">WORKFLOW</span><h2>From question to working build.</h2></div>' +
       '<div class="workflow-strip-steps"><div><span>01</span><strong>Look it up</strong><p>Find the drawing, component, or class resource before work begins.</p></div><div><span>02</span><strong>Plan the work</strong><p>Review part ratings, connections, tools, and the expected result.</p></div><div><span>03</span><strong>Build in order</strong><p>Follow the numbered instructions and the checks attached to each step.</p></div><div><span>04</span><strong>Verify</strong><p>Test the result, compare it to the plan, and note what needs to change.</p></div></div></section>' +
@@ -723,6 +753,59 @@
       '<div class="return-row"><a class="button button-outline" href="#/projects">← Back to projects</a><a class="text-link" href="#/projects">Browse another project ↗</a></div></div>';
   }
 
+  function renderSpotlightCard(item) {
+    const image = item.featuredImage || "assets/images/workshop-banner.png";
+    const tags = (item.tags || []).slice(0, 3);
+    return '<a class="spotlight-card" href="' + href(spotlightPath(item)) + '">' +
+      '<div class="spotlight-card-image"><img src="' + esc(image) + '" alt="' + esc(item.featuredImageAlt || item.title) + '" loading="lazy"></div>' +
+      '<div class="spotlight-card-copy"><p class="section-overline">' + esc(item.category || "CREATOR SHOWCASE") + '</p>' +
+      '<h2>' + esc(item.title) + '</h2><p class="spotlight-card-creator">By ' + esc(item.creatorName || "Contributor credit pending") + '</p>' +
+      '<p>' + esc(item.summary || "") + '</p>' +
+      (tags.length ? '<div class="spotlight-tags">' + tags.map(tag => '<span>' + esc(tag) + '</span>').join("") + '</div>' : '') +
+      '<span class="spotlight-card-link">View creation and details <b>↗</b></span></div></a>';
+  }
+  function renderSpotlightGallery(path) {
+    const items = publishedSpotlights().slice().sort((a,b) => String(b.dateLabel || "").localeCompare(String(a.dateLabel || "")));
+    const body = items.length
+      ? '<div class="spotlight-grid">' + items.map(renderSpotlightCard).join("") + '</div>'
+      : '<section class="spotlight-empty-state"><div class="spotlight-empty-kicker">CREATOR SHOWCASE</div><h2>No spotlights published yet.</h2><p>This collection is for completed creations, useful tools, thoughtful designs, and contributions that deserve recognition. Each entry will credit its creator and include the story, highlights, photos, and a video when one is available.</p><p>Spotlights are separate from build guides: this page celebrates the result and its contribution, rather than publishing step-by-step assembly instructions.</p></section>';
+    return '<div class="page-shell spotlight-index-page">' + breadcrumbs(path) +
+      '<header class="page-intro"><div><p class="eyebrow">CREATOR SHOWCASE</p><h1>Spotlights</h1><p>Student-built creations and useful technical contributions—presented with creator credit, context, results, and media.</p></div><span class="count-label">' + items.length + (items.length === 1 ? ' SHOWCASE' : ' SHOWCASES') + '</span></header>' +
+      body + '</div>';
+  }
+  function renderSpotlightDetail(item) {
+    const image = item.featuredImage || "assets/images/workshop-banner.png";
+    const gallery = (item.gallery || []).filter(media => media && media.image).map(media =>
+      '<figure class="spotlight-gallery-item"><img src="' + esc(media.image) + '" alt="' + esc(media.alt || item.title) + '" loading="lazy">' +
+      (media.caption ? '<figcaption>' + esc(media.caption) + '</figcaption>' : '') + '</figure>').join("");
+    const facts = [
+      item.creatorName ? {label:"Creator",value:item.creatorName} : null,
+      item.classYear ? {label:"Class / year",value:item.classYear} : null,
+      item.category ? {label:"Category",value:item.category} : null,
+      item.dateLabel ? {label:"Published",value:item.dateLabel} : null
+    ].filter(Boolean);
+    const factMarkup = facts.length ? '<dl class="spotlight-facts">' + facts.map(f =>
+      '<div><dt>' + esc(f.label) + '</dt><dd>' + esc(f.value) + '</dd></div>').join("") + '</dl>' : '';
+    const highlights = (item.highlights || []).filter(Boolean);
+    const highlightsMarkup = highlights.length ? '<section class="spotlight-block"><div class="spotlight-block-heading"><p class="section-overline">HIGHLIGHTS</p><h2>What stands out</h2></div><ul class="spotlight-highlights">' +
+      highlights.map(point => '<li>' + esc(point) + '</li>').join("") + '</ul></section>' : "";
+    const storyMarkup = item.story ? '<section class="spotlight-block"><div class="spotlight-block-heading"><p class="section-overline">THE STORY</p><h2>About the creation</h2></div><p>' + esc(item.story) + '</p></section>' : "";
+    const contributionMarkup = item.contribution ? '<section class="spotlight-block"><div class="spotlight-block-heading"><p class="section-overline">WHY IT MATTERS</p><h2>Contribution</h2></div><p>' + esc(item.contribution) + '</p></section>' : "";
+    const tags = (item.tags || []).length ? '<div class="spotlight-tags">' + item.tags.map(tag => '<span>' + esc(tag) + '</span>').join("") + '</div>' : "";
+    return '<div class="page-shell spotlight-detail-page">' +
+      '<nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a><span>/</span><a href="#/spotlights">Spotlights</a><span>/</span><span aria-current="page">' + esc(item.title) + '</span></nav>' +
+      '<header class="spotlight-detail-hero"><div class="spotlight-detail-copy"><p class="eyebrow">' + esc(item.category || "CREATOR SPOTLIGHT") + '</p>' +
+      '<h1>' + esc(item.title) + '</h1><p class="spotlight-detail-byline">Created by <strong>' + esc(item.creatorName || "Contributor credit pending") + '</strong>' +
+      (item.classYear ? '<span> · ' + esc(item.classYear) + '</span>' : '') + '</p>' +
+      '<p class="spotlight-detail-summary">' + esc(item.summary || "") + '</p>' + factMarkup + tags +
+      '</div><figure class="spotlight-detail-image"><img src="' + esc(image) + '" alt="' + esc(item.featuredImageAlt || item.title) + '">' +
+      (item.featuredCaption ? '<figcaption>' + esc(item.featuredCaption) + '</figcaption>' : '') + '</figure></header>' +
+      '<div class="spotlight-content">' + storyMarkup + contributionMarkup + highlightsMarkup +
+      (gallery ? '<section class="spotlight-block"><div class="spotlight-block-heading"><p class="section-overline">GALLERY</p><h2>More views</h2></div><div class="spotlight-gallery">' + gallery + '</div></section>' : '') +
+      youtubeEmbed(item.videoId, item.title + " — creator spotlight") +
+      '</div><div class="spotlight-return"><a class="text-link" href="#/spotlights">← Back to all spotlights</a></div></div>';
+  }
+
   function renderPage(path) {
     if (path === "/projects") return renderProjectGallery(path);
     const page = pages[path];
@@ -744,9 +827,16 @@
   function render() {
     const path = pathNow();
     const project = projectFor(path);
+    const spotlight = spotlightFor(path);
     renderTop(path);
-    renderContext(path, project);
-    const output = path === "/" ? renderHome() : path === "/inventory" ? renderInventory(path) : path === "/account" ? renderAccountPage(path) : project ? renderProjectDetail(project, path) : renderPage(path);
+    renderContext(path, project, spotlight);
+    const output = path === "/" ? renderHome()
+      : path === "/inventory" ? renderInventory(path)
+      : path === "/account" ? renderAccountPage(path)
+      : path === "/spotlights" ? renderSpotlightGallery(path)
+      : spotlight ? renderSpotlightDetail(spotlight)
+      : project ? renderProjectDetail(project, path)
+      : renderPage(path);
     app.innerHTML = '<div class="route-view">' + output + '</div>';
     app.classList.remove("is-entering");
     void app.offsetWidth;
@@ -754,7 +844,7 @@
     if (path === "/inventory") updateInventoryResults();
     updateAccountLink();
     const page = pages[path];
-    document.title = (project ? project.title : path === "/account" ? "Account" : path === "/inventory" ? "Inventory" : page ? page.title : path === "/" ? "Home" : "Electronics") + " — " + (cfg.brand || "Electronics");
+    document.title = (spotlight ? spotlight.title : project ? project.title : path === "/account" ? "Account" : path === "/inventory" ? "Inventory" : page ? page.title : path === "/" ? "Home" : "Electronics") + " — " + (cfg.brand || "Electronics");
     setSidebarOpen(false);
   }
 
@@ -771,11 +861,14 @@
     });
     const projectResults = projects.filter(project => (project.title + " " + project.slug + " " + project.grade + " " + project.category + " " + project.summary + " " + project.description).toLowerCase().includes(q))
       .map(project => ({path:projectPath(project),title:project.title,description:project.summary || project.description || "Project page"}));
+    const spotlightResults = publishedSpotlights().filter(item =>
+      [item.title, item.creatorName, item.category, item.summary, item.story, item.contribution, ...(item.highlights || []), ...(item.tags || [])].join(" ").toLowerCase().includes(q)
+    ).map(item => ({path:spotlightPath(item),title:"Spotlight · " + item.title,description:item.summary || item.contribution || "Creator showcase"}));
     const inventoryResults = inventory.filter(item => {
       const loc = item.location || {};
       return [item.id,item.partNumber,item.name,item.manufacturer,item.category,item.description,inventoryLocation(item),loc.area,loc.cabinet,loc.shelf,loc.bin,item.notes,item.supplier].join(" ").toLowerCase().includes(q);
     }).slice(0,4).map(item => ({path:"/inventory",title:"Inventory · " + (item.name || item.partNumber),description:(item.partNumber || item.id) + " · " + inventoryArea(item) + " · " + inventoryStock(item).label}));
-    const matches = navResults.concat(projectResults,inventoryResults).filter((item,index,list) => list.findIndex(other => other.path === item.path && other.title === item.title) === index).slice(0,8);
+    const matches = navResults.concat(projectResults,spotlightResults,inventoryResults).filter((item,index,list) => list.findIndex(other => other.path === item.path && other.title === item.title) === index).slice(0,8);
     results.innerHTML = '<div class="search-results-heading">Search results</div>' + (matches.length
       ? matches.map(item => '<a href="' + href(item.path) + '"><strong>' + esc(item.title) + '</strong><small>' + esc(item.description) + '</small></a>').join("")
       : '<div class="search-empty">No results. Try “schematics”, “projects”, or “safety”.</div>');
