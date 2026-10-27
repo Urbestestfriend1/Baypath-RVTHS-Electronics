@@ -15,7 +15,7 @@ window.SHOP_CONFIG = {
     text: "#202a36",
     muted: "#4d5a69",
     dim: "#657384",
-    accent: "#315f86"
+    accent: "#4b328b"
   },
   heroEyebrow: "Baypath Regional Vocational Technical High School",
   heroTitleTop: "ELECTRONICS",
