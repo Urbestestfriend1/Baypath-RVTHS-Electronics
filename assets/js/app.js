@@ -45,7 +45,15 @@
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
   }[ch]));
   const href = path => "#" + (path || "/");
+  let authFlow = (() => {
+    const requested = new URLSearchParams(location.search).get("auth");
+    const fragment = location.hash.slice(1);
+    if (requested === "invite" || /(?:^|&)type=invite(?:&|$)/.test(fragment)) return "invite";
+    if (requested === "recovery" || /(?:^|&)type=recovery(?:&|$)/.test(fragment)) return "recovery";
+    return "";
+  })();
   const pathNow = () => {
+    if (authFlow) return "/account";
     const raw = location.hash.slice(1);
     if (!raw || raw === "/" || !raw.startsWith("/")) return "/";
     return raw.replace(/\/+$/, "") || "/";
@@ -506,14 +514,23 @@
     '</div>';
   }
 
+  function renderAccountPasswordFlow(path){
+    const isInvite = authFlow === "invite";
+    const heading = isInvite ? "Set up your account" : "Choose a new password";
+    const intro = isInvite ? "Confirm your invitation by setting a password for your Baypath Electronics account." : "Choose a new password for your Baypath Electronics account.";
+    if(!signedInUser) return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / SETUP</p><h1>'+heading+'</h1><p>'+intro+'</p></div></header><section class="auth-card"><h2>Checking the secure link…</h2><p class="account-muted">If this does not finish, the invitation or reset link may have expired. Return to sign in and request a fresh link.</p><a class="button button-outline" href="#/account">Back to sign in</a></section></div>';
+    return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / SETUP</p><h1>'+heading+'</h1><p>'+intro+'</p></div></header><section class="auth-card"><div class="auth-card-heading"><span class="auth-icon" aria-hidden="true">♙</span><div><h2>'+heading+'</h2><p>'+esc(signedInUser.email||"")+'</p></div></div>'+(accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+'<form id="finish-password-form" class="auth-form"><label>New password<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Confirm password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required></label><p class="account-muted">Use at least 10 characters. Do not reuse a password from another account.</p><button class="button button-accent" type="submit"><span aria-hidden="true">✓</span> Save password and continue</button></form></section></div>';
+  }
+
   function renderAccountPage(path){
     const roleLabel=!(currentProfile&&currentProfile.is_active)?"Pending activation":currentRole==="admin"?"Administrator":currentRole==="editor"?"Inventory editor":currentRole==="viewer"?"Viewer":"No role assigned";
     if(!supabaseClient) return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / SIGN IN</p><h1>Account access</h1><p>Sign-in is currently unavailable.</p></div></header><div class="auth-card"><p class="account-error">'+esc(supabaseInitError||"Supabase configuration could not be loaded.")+'</p></div></div>';
+    if(authFlow) return renderAccountPasswordFlow(path);
     if(!signedInUser){
       return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / SIGN IN</p><h1>Sign in to Electronics</h1><p>Sign in to view the live inventory database. Inventory editing and account management are role-restricted.</p></div></header>' +
         '<div class="auth-card"><div class="auth-card-heading"><span class="auth-icon">↪</span><div><h2>Sign in</h2><p>Use the account created in Supabase Authentication.</p></div></div>' +
         (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+
-        '<form id="sign-in-form" class="auth-form"><label>Email address<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-accent" type="submit">Sign in</button><p class="account-muted">Accounts are created by the site administrator. If you need access, ask the administrator for an invitation.</p></form></div></div>';
+        '<form id="sign-in-form" class="auth-form"><label>Email address<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-accent" type="submit"><span aria-hidden="true">↪</span> Sign in</button><button class="text-link auth-reset-toggle" type="button" data-password-reset-toggle><span aria-hidden="true">↻</span> Forgot password?</button><p class="account-muted">Invited users must confirm their email and create a password from the invitation link. If that link has expired, use password recovery or request a new invitation.</p></form><form id="password-reset-form" class="auth-form auth-reset-form" hidden><label>Email address<input name="email" type="email" autocomplete="username" required></label><button class="button button-outline" type="submit"><span aria-hidden="true">✉</span> Send password reset link</button><button class="text-link" type="button" data-password-reset-toggle>Cancel</button></form></div></div>';
     }
     if(currentRole==="admin" && isActiveAccount()) return renderAdminDashboard(path);
     return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / ACCESS CONTROL</p><h1>Account</h1><p>Manage your session and review your permission level.</p></div></header>' +
@@ -989,6 +1006,32 @@
   });
 
   document.addEventListener("submit", async event => {
+    if(event.target.id === "finish-password-form"){
+      event.preventDefault();
+      if(!supabaseClient||!signedInUser||!authFlow){accountMessage="The secure setup session is missing. Reopen the invitation or request a fresh reset link.";accountMessageKind="error";render();return;}
+      const form=event.target,password=form.elements.password.value;
+      if(password.length<10){accountMessage="Use at least 10 characters for your password.";accountMessageKind="error";render();return;}
+      if(password!==form.elements.confirmPassword.value){accountMessage="The passwords do not match.";accountMessageKind="error";render();return;}
+      const button=form.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent="Saving password…";}
+      const {error}=await supabaseClient.auth.updateUser({password});
+      if(error){accountMessage=error.message||"Could not save the password.";accountMessageKind="error";render();return;}
+      authFlow="";
+      try{window.history.replaceState(null,"",location.pathname+"#/account");}catch(_){location.hash="#/account";}
+      accountMessage="Password saved. Your account setup is complete.";accountMessageKind="success";
+      const {data}=await supabaseClient.auth.getSession();
+      await syncAuthSession(data&&data.session);
+      return;
+    }
+    if(event.target.id==="password-reset-form"){
+      event.preventDefault();
+      if(!supabaseClient){accountMessage="Supabase is not available.";accountMessageKind="error";render();return;}
+      const form=event.target,button=form.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent="Sending…";}
+      const redirectTo=location.origin+location.pathname+"?auth=recovery";
+      const {error}=await supabaseClient.auth.resetPasswordForEmail(form.elements.email.value.trim(),{redirectTo});
+      if(error){accountMessage=error.message||"Could not send the reset link.";accountMessageKind="error";}
+      else{accountMessage="If an account exists for that address, a password reset email has been sent.";accountMessageKind="success";}
+      render();return;
+    }
     if (event.target.id === "sign-in-form") {
       event.preventDefault();
       if(!supabaseClient){accountMessage="Supabase is not available.";accountMessageKind="error";render();return;}
@@ -1050,6 +1093,12 @@
     }
   });
   document.addEventListener("click", async event => {
+    const resetToggle=event.target.closest("[data-password-reset-toggle]");
+    if(resetToggle){
+      const resetForm=document.getElementById("password-reset-form"),signInForm=document.getElementById("sign-in-form");
+      if(resetForm){resetForm.hidden=!resetForm.hidden;if(!resetForm.hidden&&signInForm)resetForm.elements.email.value=signInForm.elements.email.value.trim();if(!resetForm.hidden)resetForm.elements.email.focus();}
+      return;
+    }
     const add=event.target.closest("[data-inventory-add]");
     if(add){showInventoryEditor("");return;}
     const edit=event.target.closest("[data-inventory-edit]");
