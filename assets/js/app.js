@@ -1450,6 +1450,55 @@
       if(resetForm){resetForm.hidden=!resetForm.hidden;if(!resetForm.hidden&&signInForm)resetForm.elements.email.value=signInForm.elements.email.value.trim();if(!resetForm.hidden)resetForm.elements.email.focus();}
       return;
     }
+    const newContent = event.target.closest("[data-content-new]");
+    if (newContent) {
+      if (!isActiveAdmin()) return;
+      contentEditorType = newContent.getAttribute("data-content-new") || "spotlight";
+      contentEditorRecord = null;
+      contentEditorMessage = "";
+      contentEditorOpen = true;
+      render();
+      const editor = document.getElementById("site-content-editor");
+      if (editor) editor.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const editContent = event.target.closest("[data-content-edit]");
+    if (editContent) {
+      if (!isActiveAdmin()) return;
+      const id = editContent.getAttribute("data-content-edit");
+      contentEditorRecord = siteContent.find(row => row.id === id) || null;
+      if (!contentEditorRecord) { accountMessage = "This content record could not be found. Refresh the content list."; accountMessageKind = "error"; render(); return; }
+      contentEditorType = contentEditorRecord.content_type;
+      contentEditorMessage = "";
+      contentEditorOpen = true;
+      render();
+      const editor = document.getElementById("site-content-editor");
+      if (editor) editor.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (event.target.closest("[data-content-cancel]")) {
+      contentEditorOpen = false; contentEditorRecord = null; contentEditorMessage = ""; render(); return;
+    }
+    if (event.target.closest("[data-content-seed]")) {
+      if (!isActiveAdmin()) return;
+      await seedExistingReferenceContent();
+      return;
+    }
+    const deleteContent = event.target.closest("[data-content-delete]");
+    if (deleteContent) {
+      if (!isActiveAdmin()) return;
+      const id = deleteContent.getAttribute("data-content-delete");
+      const row = siteContent.find(item => item.id === id);
+      if (!row || !window.confirm('Delete "' + row.title + '" from the site content? This cannot be undone.')) return;
+      deleteContent.disabled = true;
+      const { error } = await supabaseClient.from("site_content").delete().eq("id", id);
+      if (error) { accountMessage = error.message || "Could not delete content."; accountMessageKind = "error"; render(); return; }
+      contentEditorOpen = false; contentEditorRecord = null;
+      accountMessage = "Content deleted."; accountMessageKind = "success";
+      await loadSiteContent(false);
+      render();
+      return;
+    }
     const add=event.target.closest("[data-inventory-add]");
     if(add){showInventoryEditor("");return;}
     const edit=event.target.closest("[data-inventory-edit]");
