@@ -202,6 +202,25 @@
       '<div class="library-card-copy"><span class="library-card-eyebrow">' + esc(card.eyebrow || "LIBRARY") + '</span><h3>' + esc(card.title) + '</h3><p>' + esc(card.path === "/inventory" ? inventoryDescription : card.description || "") + '</p><span class="library-card-link">' + esc(card.linkLabel || "Open section") + '<b>↗</b></span></div></a>'
     ).join("");
     const featured = projects.filter(project => project.featured && !project.template);
+    const weeklyPool = featured.length ? featured : projects.filter(project => !project.template);
+    const now = new Date();
+    const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const weekStart = utcMidnight - ((new Date(utcMidnight).getUTCDay() + 6) % 7) * 86400000;
+    const weekIndex = Math.floor(weekStart / (7 * 86400000));
+    const weeklyProject = weeklyPool.length
+      ? weeklyPool[((weekIndex % weeklyPool.length) + weeklyPool.length) % weeklyPool.length]
+      : null;
+    const weeklyFeatureBanner = weeklyProject
+      ? '<section class="weekly-featured" aria-labelledby="weekly-featured-title">' +
+        '<a class="weekly-featured-image" href="' + href(projectPath(weeklyProject)) + '" aria-label="Open ' + esc(weeklyProject.title || "featured project") + '">' +
+        '<img src="' + esc(weeklyProject.featuredImage || "assets/images/project.png") + '" alt="' + esc(weeklyProject.featuredImageAlt || weeklyProject.title || "Featured electronics project") + '">' +
+        '<span class="weekly-featured-image-label">PROJECT SPOTLIGHT / WEEKLY</span></a>' +
+        '<div class="weekly-featured-copy"><p class="section-overline">FEATURED PROJECT THIS WEEK</p>' +
+        '<h2 id="weekly-featured-title">' + esc(weeklyProject.title || "Featured project") + '</h2>' +
+        '<p class="weekly-featured-byline">Project contributor <strong>' + esc(weeklyProject.featuredBy || weeklyProject.author || "Contributor credit pending") + '</strong></p>' +
+        '<p class="weekly-featured-description">' + esc(weeklyProject.summary || weeklyProject.description || "Project details will be added soon.") + '</p>' +
+        '<a class="button button-accent" href="' + href(projectPath(weeklyProject)) + '">Explore this project <span class="button-end">↗</span></a></div></section>'
+      : "";
     const displayProjects = (featured.length ? featured : projects.filter(project => !project.template)).slice(0, 2);
     const featuredCards = displayProjects.length
       ? '<div class="featured-projects">' + displayProjects.map(projectCard).join("") + '</div>'
@@ -216,7 +235,7 @@
       '</div><div class="dashboard-hero-side"><div class="hero-side-top"><span class="hero-status-dot"></span><span>SHOP REFERENCE / 01</span></div>' +
       '<div class="hero-side-diagram"><img src="assets/images/schematic.png" alt="" loading="lazy"></div>' +
       '<div class="hero-side-bottom"><span>LOOK IT UP</span><span>BUILD IT RIGHT</span><span>CHECK THE RESULT</span></div></div></header>' +
-      '<section class="dashboard-metrics" aria-label="Library overview">' +
+      weeklyFeatureBanner + '<section class="dashboard-metrics" aria-label="Library overview">' +
       '<div class="metric-card"><span class="metric-icon">◇</span><span class="metric-label">PROJECT LIBRARY</span><strong>' + projects.filter(p => !p.template).length.toString().padStart(2,"0") + '</strong><small>Reference builds and notes</small></div>' +
       '<div class="metric-card"><span class="metric-icon">▤</span><span class="metric-label">REFERENCE SECTIONS</span><strong>' + flatNav.filter(item => item.path !== "/" && item.path !== "/projects" && item.path !== "/inventory").length.toString().padStart(2,"0") + '</strong><small>Drawings, resources, and class pages</small></div>' +
       '<div class="metric-card metric-card-inventory"><span class="metric-icon">▦</span><span class="metric-label">INVENTORY CATALOG</span><strong>' + exampleCount.padStart(2,"0") + '</strong><small>' + (exampleInventory ? "Demonstration rows — not verified stock" : "Catalog line items") + '</small></div>' +
