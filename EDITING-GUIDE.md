@@ -192,3 +192,10 @@ For a video, set `videoId` to the 11-character YouTube video ID (not the full UR
 - **Schematics** is the shared reference shelf for reusable circuits. It focuses on what the circuit does and how to read the drawing; the linked project guide contains the full materials list and build/testing instructions.
 - Three general circuit examples (555 timer, LED current limiter, NPN transistor switch) remain available as project guides and are linked from Schematics. They are not assigned to a grade unless a class record explicitly identifies the year.
 - Old bookmarked `/schematics/freshman`, `/schematics/sophomore`, `/schematics/junior`, and `/schematics/senior` paths now point visitors to the new Projects structure.
+
+
+## Custom invitation email template
+
+A branded, mobile-friendly invitation template is stored at `docs/supabase-invite-email-template.html`. To apply its design, open the Supabase project dashboard, go to **Authentication → Email Templates → Invite user**, and paste in the template's HTML. The template uses Supabase's `{{ .ConfirmationURL }}` variable for the secure invite action. The live app routes confirmed invitees to its password-setup screen; the email template itself must be saved in Supabase's dashboard to change the actual email appearance.
+
+The invitation function redirects to the site's base URL so it is more likely to match the already-approved redirect URL. The app recognizes Supabase's `type=invite` callback and provides the password form. Password-reset emails use the same base URL and open the reset-password form when Supabase returns `type=recovery`.
