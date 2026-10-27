@@ -12,6 +12,7 @@
   let currentProfile = null;
   let currentRole = null;
   let databaseInventoryLoaded = false;
+  let inventoryLoading = true;
   let inventoryLoadError = "";
   let accountMessage = "";
   let accountMessageKind = "info";
@@ -290,8 +291,10 @@
     };
   }
   async function refreshDatabaseInventory(){
-    if(!supabaseClient){ inventory = []; databaseInventoryLoaded = false; inventoryLoadError = "Supabase is not available."; return; }
+    if(!supabaseClient){ inventory = []; databaseInventoryLoaded = false; inventoryLoading = false; inventoryLoadError = "Supabase is not available."; return; }
     inventoryLoadError = "";
+    inventoryLoading = true;
+    if(pathNow() === "/inventory") render();
     try{
       const { data, error } = await supabaseClient.from("inventory_items").select("*").order("name", { ascending: true });
       if(error) throw error;
@@ -301,6 +304,9 @@
       inventory = [];
       databaseInventoryLoaded = false;
       inventoryLoadError = error && error.message ? error.message : "Unable to load the shared inventory database. Check your connection and try again.";
+    }finally{
+      inventoryLoading = false;
+      if(pathNow() === "/inventory") render();
     }
   }
   async function loadAdminUsers(){
@@ -354,7 +360,7 @@
       supabaseClient.auth.getSession().then(({data}) => syncAuthSession(data.session)).catch(error => {
         supabaseInitError = error.message || "Could not check your sign-in session."; render();
       });
-    } catch(error){ supabaseInitError = error.message || "Supabase is not available."; updateAccountLink(); render(); }
+    } catch(error){ supabaseInitError = error.message || "Supabase is not available."; inventoryLoading = false; inventoryLoadError = supabaseInitError; updateAccountLink(); render(); }
   }
   function renderInventoryEditorPanel(){
     if(!canEditInventory()) return "";
@@ -499,6 +505,11 @@
   }
   function updateInventoryResults(){
     const host=document.getElementById("inventory-results");if(!host)return;
+    if(inventoryLoading && !databaseInventoryLoaded){
+      host.innerHTML='<div class="inventory-no-results inventory-loading-state"><strong>Loading shared inventory…</strong><p>Fetching the latest records from the central database.</p></div>';
+      const loadingSummary=document.getElementById("inventory-live-summary");if(loadingSummary)loadingSummary.textContent="Loading shared inventory";
+      return;
+    }
     const rows=inventoryMatches(),total=rows.length,size=Math.max(10,Number(inventoryState.pageSize)||50);
     const pageCount=Math.max(1,Math.ceil(total/size));inventoryState.page=Math.min(Math.max(1,inventoryState.page),pageCount);
     const start=total?(inventoryState.page-1)*size:0,end=Math.min(start+size,total),shown=rows.slice(start,start+size);
@@ -524,7 +535,7 @@
       '<div class="inventory-heading-side"><span class="inventory-heading-icon">▦</span><strong>MASTER STOCK LIST</strong><small>Part → Location → Quantity → Notes</small><a href="#inventory-catalog">Browse the catalog ↓</a></div></header>'+
       renderInventoryEditorPanel()+
       '<aside class="inventory-auth-notice"><strong>Shared inventory database</strong><p>This is the same live catalog for everyone, whether signed in or not. Authorized editors’ changes appear here automatically. <a href="#/account">Sign in</a> to manage records if you have editing permissions.</p></aside>'+
-      (inventoryLoadError ? '<aside class="account-error" role="alert">Could not load live inventory: '+esc(inventoryLoadError)+'</aside>' : '')+
+      (inventoryLoadError ? '<aside class="account-error" role="alert">Could not load shared inventory: '+esc(inventoryLoadError)+' <button type="button" class="button button-outline" data-inventory-retry>Retry</button></aside>' : '')+
       (databaseInventoryLoaded && inventory.length===0 ? '<aside class="inventory-auth-notice"><strong>No stock records yet</strong><p>The shared database is currently empty. An authorized inventory editor can add the first item.</p></aside>' : '')+
       '<section class="inventory-summary-grid" aria-label="Inventory summary"><div class="inventory-summary-card"><span>Catalog records</span><strong>'+inventory.length.toLocaleString("en-US")+'</strong><small>'+"Shared with all visitors"+'</small></div>'+
       '<div class="inventory-summary-card"><span>Categories</span><strong>'+categories.length.toString().padStart(2,"0")+'</strong><small>Types of item listed</small></div>'+
@@ -931,6 +942,7 @@
       if(supabaseClient){const {error}=await supabaseClient.auth.signOut();if(error){accountMessage=error.message;accountMessageKind="error";render();return;}}
       accountMessage="Signed out.";accountMessageKind="info";location.hash="#/account";return;
     }
+    if(event.target.closest("[data-inventory-retry]")){await refreshDatabaseInventory();render();return;}
     if(event.target.closest("[data-admin-users-refresh]")){await loadAdminUsers();return;}
     const saveRole=event.target.closest("[data-user-role-save]");
     if(saveRole){
