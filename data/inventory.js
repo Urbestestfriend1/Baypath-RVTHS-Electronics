@@ -17,7 +17,7 @@ window.SHOP_INVENTORY = [
     id: "EX-0001", recordType: "example", partNumber: "RES-1K-025W", name: "1 kΩ resistor, ¼ W", manufacturer: "Generic",
     category: "Resistors", description: "Through-hole carbon-film resistor for current limiting, bias networks, and basic lab circuits.",
     location: { area: "DEMO — Electronics Lab", cabinet: "Cabinet A", shelf: "Drawer A01", bin: "Bin 01" },
-    quantity: 124, unit: "pcs", minimumQuantity: 30, condition: "New", supplier: "Example supplier",
+    quantity: 9999999, unit: "pcs", minimumQuantity: 30, condition: "New", supplier: "Example supplier",
     datasheet: "", updatedAt: "2026-10-01", notes: "Example stock record. Verify actual quantity, tolerance, and power rating."
   },
   {
