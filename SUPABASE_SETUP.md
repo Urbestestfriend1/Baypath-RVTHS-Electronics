@@ -14,11 +14,11 @@ This site uses Supabase for private inventory records, sign-in, role-based acces
 - **Inventory editor:** can view, add, and update the shared inventory records.
 - **Administrator:** can also delete inventory records, invite users, change roles, and remove user accounts.
 
-The database enforces these permissions with Row Level Security (RLS). Inventory reads are public; writes are restricted to active editors and administrators. Hiding editor controls in the web interface is not the only security layer.
+The database enforces these permissions with Row Level Security (RLS). Inventory reads are public; writes require an active profile, confirmed email, and editor/admin role. Part numbers are normalized and checked case-insensitively for duplicates; quantity and minimum stock cannot be negative. Hiding editor controls in the web interface is not the only security layer.
 
 ## Add a user
 
-Use the **Account → Invite a user** form while signed in as an active administrator. It sends an invitation email and assigns the selected role. New accounts created through the invitation flow are activated by the database trigger.
+Use the **Account → Invite a user** form while signed in as an active administrator. It sends an invitation email and assigns the selected role. New invitation profiles may be marked active by the database trigger, but database writes and administrator tools additionally require a confirmed email. An administrator can activate a pre-existing account only after its email has been confirmed. Self-registered or manually created accounts without approval stay unable to edit inventory.
 
 Do not use **Authentication → Add user** for routine new accounts: manually created users are inactive by default unless an administrator explicitly activates them. Inactive accounts cannot read or change live inventory.
 
