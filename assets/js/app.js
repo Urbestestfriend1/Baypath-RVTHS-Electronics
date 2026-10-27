@@ -292,10 +292,16 @@
   async function refreshDatabaseInventory(){
     if(!supabaseClient){ inventory = []; databaseInventoryLoaded = false; inventoryLoadError = "Supabase is not available."; return; }
     inventoryLoadError = "";
-    const { data, error } = await supabaseClient.from("inventory_items").select("*").order("name", { ascending: true });
-    if(error){ inventory = []; inventoryLoadError = error.message || "Unable to load the shared inventory database."; databaseInventoryLoaded = false; return; }
-    inventory = (data || []).map(dbToInventory);
-    databaseInventoryLoaded = true;
+    try{
+      const { data, error } = await supabaseClient.from("inventory_items").select("*").order("name", { ascending: true });
+      if(error) throw error;
+      inventory = (data || []).map(dbToInventory);
+      databaseInventoryLoaded = true;
+    }catch(error){
+      inventory = [];
+      databaseInventoryLoaded = false;
+      inventoryLoadError = error && error.message ? error.message : "Unable to load the shared inventory database. Check your connection and try again.";
+    }
   }
   async function loadAdminUsers(){
     if(!supabaseClient || !isActiveAccount() || currentRole !== "admin"){ adminUsers = []; return; }
