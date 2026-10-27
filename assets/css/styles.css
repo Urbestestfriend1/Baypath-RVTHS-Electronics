@@ -2285,3 +2285,9 @@ body[data-theme="dark"] .inventory-auth-notice{box-shadow:none}
   .inventory-editor-actions{flex-wrap:wrap}
   .inventory-editor-actions p{flex-basis:100%}
 }
+
+.account-pending{
+  display:inline-flex;align-self:flex-start;margin-top:2px;padding:3px 7px;
+  border-radius:999px;background:#fff4df;color:#7d5311;font-size:10px;font-weight:750;
+}
+body[data-theme="dark"] .account-pending{background:#382d1b;color:#f4d7a2}
