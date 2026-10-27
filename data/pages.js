@@ -4,77 +4,166 @@
 */
 window.SHOP_PAGES = {
   "/schematics": {
-    eyebrow: "Drawings / Circuits / Plans",
+    eyebrow: "Shared Circuit Reference",
     title: "Schematics",
-    description: "A structured library of circuit drawings and project plans, grouped by class year with a shared shelf for circuits that are useful across the program. Use these pages when you need to understand a connection before you wire it, compare a design, or keep a drawing alongside a build.",
-    sections: [{ heading: "Browse schematics", text: "Start with your class-year section when you need a drawing tied to coursework, or use Common for reusable examples that apply to more than one project. Each diagram is a reference for planning and checking connections, not a substitute for checking component ratings and the instructor's instructions." }],
+    description: "Reusable circuit references for common electronics tasks. Use these pages to understand circuit purpose, review the schematic, and check relevant electrical details. Grade-specific builds and complete project write-ups live under Projects.",
+    sections: [{ heading: "A shared circuit library", text: "These circuits are useful reference points across multiple classes and projects. Schematic pages focus on what the circuit does and how it is represented; build steps, parts lists, and full verification workflows are kept with the corresponding project guide." }],
     cards: [
-      { title: "Common schematics", tag: "SHARED REFERENCE", description: "Circuit fundamentals and repeat-use examples, including the 555 timer.", image: "assets/images/schematic-555-timer.png", imageAlt: "555 timer schematic", path: "/schematics/common", linkLabel: "View common circuits" }
+      { title: "555 Timer LED Flasher", tag: "TIMING", description: "An astable 555 timer produces a repeating output.", image: "assets/images/schematic-555-timer.png", imageAlt: "555 timer schematic", path: "/schematics/555-timer-led-flasher", linkLabel: "View schematic" },
+      { title: "LED Current Limiter", tag: "CIRCUIT FUNDAMENTALS", description: "A series resistor limits LED current from a DC supply.", image: "assets/images/schematic-led-current.png", imageAlt: "LED current-limiting schematic", path: "/schematics/led-current-limiter", linkLabel: "View schematic" },
+      { title: "NPN Transistor Switch", tag: "TRANSISTORS", description: "A transistor switches a small load using a control signal.", image: "assets/images/schematic-transistor-switch.png", imageAlt: "NPN transistor switch schematic", path: "/schematics/npn-transistor-switch", linkLabel: "View schematic" }
     ]
-  },
-  "/schematics/freshman": {
-    eyebrow: "Schematics / Freshman",
-    title: "Freshman schematics",
-    description: "Introductory circuit drawings and component references for first-year work. Use this section to build confidence reading symbols, tracing current paths, identifying polarity, and matching the drawing to a physical breadboard.",
-    sections: [{ heading: "First-year reference", text: "Simple circuits, component symbols, resistor values, and introductory diagrams belong here." }]
-  },
-  "/schematics/freshman/projects": {
-    eyebrow: "Schematics / Freshman / Projects",
-    title: "Freshman project schematics",
-    description: "Drawings for first-year projects, from basic circuits to hands-on build exercises.",
-    sections: [{ heading: "Project drawings", text: "Plans and circuit diagrams used alongside freshman project work." }]
-  },
-  "/schematics/sophomore": {
-    eyebrow: "Schematics / Sophomore",
-    title: "Sophomore schematics",
-    description: "Circuit plans and technical drawings for second-year work, with room for subsystem layouts, measurements, and the connection details that become important as projects grow more involved.",
-    sections: [{ heading: "Second-year reference", text: "A place for more involved circuits, subsystem diagrams, and project-specific drawings." }]
-  },
-  "/schematics/sophomore/projects": {
-    eyebrow: "Schematics / Sophomore / Projects",
-    title: "Sophomore project schematics",
-    description: "Project drawings and supporting circuit references for sophomore work.",
-    sections: [{ heading: "Project drawings", text: "Plans, measurements, and supporting diagrams for second-year builds." }]
-  },
-  "/schematics/junior": {
-    eyebrow: "Schematics / Junior",
-    title: "Junior schematics",
-    description: "A collection point for more advanced circuit diagrams and project plans. Keep drawings clear, label the important signals and power rails, and attach notes that help another student reproduce the setup accurately.",
-    sections: [{ heading: "Third-year reference", text: "Advanced diagrams, design references, and project documentation." }]
-  },
-  "/schematics/junior/projects": {
-    eyebrow: "Schematics / Junior / Projects",
-    title: "Junior project schematics",
-    description: "Circuit plans and supporting drawings for junior projects.",
-    sections: [{ heading: "Project drawings", text: "Project schematics and technical notes for third-year builds." }]
-  },
-  "/schematics/senior": {
-    eyebrow: "Schematics / Senior",
-    title: "Senior schematics",
-    description: "A home for senior-level technical drawings, capstone circuits, and supporting documentation. Use it to keep the latest revision, relevant measurements, and part references together with the final plan.",
-    sections: [{ heading: "Fourth-year reference", text: "Capstone plans, detailed schematics, and documentation for larger projects." }]
-  },
-  "/schematics/senior/projects": {
-    eyebrow: "Schematics / Senior / Projects",
-    title: "Senior project schematics",
-    description: "Plans and documentation for senior and capstone builds.",
-    sections: [{ heading: "Project drawings", text: "Schematics and supporting engineering notes for senior projects." }]
   },
   "/schematics/common": {
     eyebrow: "Schematics / Shared Reference",
     title: "Common circuits",
-    description: "A shared shelf of dependable circuit examples for common electronics tasks. Each reference is intended to explain the circuit's job, show the connections, identify the required parts, and give you a sensible way to test the result.",
-    sections: [{ heading: "Circuit examples", text: "These worked examples cover three useful building blocks: a 555 timer that produces a repeating output, a resistor that limits LED current, and an NPN transistor that switches a small load. Each project page keeps its design reasoning, schematic, parts and tools, numbered build steps, verification checks, and common troubleshooting advice in one consistent workflow." }],
+    description: "A shelf of commonly used circuit references for timing, current limiting, and transistor switching. These pages explain the circuit's purpose and schematic, while assembly procedures stay in the separate project guides.",
+    sections: [{ heading: "Circuit references", text: "Select a circuit to review its schematic and key design notes. For numbered assembly instructions, materials, testing, and troubleshooting, use the linked project guide from each schematic page." }],
     cards: [
-      { title: "555 Timer LED Flasher", tag: "TIMING CIRCUITS", description: "An astable 555 timer produces a repeating output and blinks an LED.", image: "assets/images/cover-555-timer.png", imageAlt: "555 timer LED flasher", path: "/projects/555-timer-led-flasher", linkLabel: "Open circuit" },
-      { title: "LED and Current-Limiting Resistor", tag: "CIRCUIT FUNDAMENTALS", description: "Use Ohm's law to estimate current in a simple series circuit.", image: "assets/images/cover-led-current.png", imageAlt: "LED and current-limiting resistor circuit", path: "/projects/led-current-limiter", linkLabel: "Open circuit" },
-      { title: "NPN Transistor as a Switch", tag: "TRANSISTORS", description: "A small control current switches an LED load through an NPN transistor.", image: "assets/images/cover-transistor-switch.png", imageAlt: "NPN transistor switch", path: "/projects/npn-transistor-switch", linkLabel: "Open circuit" }
+      { title: "555 Timer LED Flasher", tag: "TIMING", description: "Astable timing circuit with a repeating LED output.", image: "assets/images/schematic-555-timer.png", imageAlt: "555 timer schematic", path: "/schematics/555-timer-led-flasher", linkLabel: "View schematic" },
+      { title: "LED Current Limiter", tag: "CIRCUIT FUNDAMENTALS", description: "Series resistance controls current through an LED.", image: "assets/images/schematic-led-current.png", imageAlt: "LED current-limiting schematic", path: "/schematics/led-current-limiter", linkLabel: "View schematic" },
+      { title: "NPN Transistor Switch", tag: "TRANSISTORS", description: "An NPN transistor controls current to a load.", image: "assets/images/schematic-transistor-switch.png", imageAlt: "NPN transistor switch schematic", path: "/schematics/npn-transistor-switch", linkLabel: "View schematic" }
     ]
   },
+  "/schematics/555-timer-led-flasher": {
+    eyebrow: "Schematics / Timing Circuits",
+    title: "555 Timer LED Flasher",
+    description: "A shared timing-circuit reference showing the NE555 in astable mode. The capacitor charges and discharges through the timing resistors, causing the output to switch repeatedly.",
+    sections: [
+      { heading: "Schematic", text: "The timing network sets the approximate blink rate. Confirm pin numbering, component polarity, and the ratings of the exact parts used before wiring.", image: "assets/images/schematic-555-timer.png", imageAlt: "NE555 astable LED flasher schematic" },
+      { heading: "Design notes", text: "The timing resistors and capacitor establish the oscillation period. Supply and reset connections must match the diagram, and electrolytic capacitor polarity matters." }
+    ],
+    cards: [{ title: "Full project guide", tag: "BUILD GUIDE", description: "The separate project record includes materials, build steps, verification, and troubleshooting.", image: "assets/images/cover-555-timer.png", imageAlt: "555 timer LED flasher project illustration", path: "/projects/555-timer-led-flasher", linkLabel: "Open project guide" }]
+  },
+  "/schematics/led-current-limiter": {
+    eyebrow: "Schematics / Circuit Fundamentals",
+    title: "LED Current Limiter",
+    description: "A basic series circuit using a resistor to keep LED current within a suitable range for a low-voltage DC supply.",
+    sections: [
+      { heading: "Schematic", text: "The resistor and LED are in series. Choose resistance using the supply voltage, the LED's forward voltage, and the desired current, then verify the ratings of the actual parts.", image: "assets/images/schematic-led-current.png", imageAlt: "LED current-limiting resistor circuit schematic" },
+      { heading: "Design notes", text: "An LED is polarity-sensitive. A resistor reduces current but does not make an arbitrary supply or resistor value safe; calculate the expected current before connecting power." }
+    ],
+    cards: [{ title: "Full project guide", tag: "BUILD GUIDE", description: "Review the worked example, material list, assembly process, and checks in the separate guide.", image: "assets/images/cover-led-current.png", imageAlt: "LED and current-limiting resistor project illustration", path: "/projects/led-current-limiter", linkLabel: "Open project guide" }]
+  },
+  "/schematics/npn-transistor-switch": {
+    eyebrow: "Schematics / Transistors",
+    title: "NPN Transistor Switch",
+    description: "A common low-side switching arrangement in which a small control signal lets an NPN transistor switch current through a separate load.",
+    sections: [
+      { heading: "Schematic", text: "The drawing shows the control input, base resistor, transistor terminals, load, and shared reference. Pin order differs among transistor packages, so use the datasheet for the specific part.", image: "assets/images/schematic-transistor-switch.png", imageAlt: "NPN transistor low-side switch schematic" },
+      { heading: "Design notes", text: "Check the transistor's pinout, base-drive requirements, load current, and polarity before applying power. Inductive loads may need additional protection circuitry." }
+    ],
+    cards: [{ title: "Full project guide", tag: "BUILD GUIDE", description: "The complete example includes its material list, assembly details, verification, and troubleshooting.", image: "assets/images/cover-transistor-switch.png", imageAlt: "NPN transistor switch project illustration", path: "/projects/npn-transistor-switch", linkLabel: "Open project guide" }]
+  },
+  "/schematics/freshman": {
+    eyebrow: "Legacy link / Moved",
+    title: "Freshman projects have moved",
+    description: "Grade-specific work is now organized under Projects. This old address remains available for bookmarked links.",
+    sections: [{ heading: "Continue to Projects", text: "Open the Freshman project area to browse or add grade-specific project documentation." }],
+    cards: [{ title: "Freshman projects", tag: "PROJECTS / FRESHMAN", description: "Open the new grade-level project area.", image: "assets/images/cover-555-timer.png", imageAlt: "Electronics project illustration", path: "/projects/freshman", linkLabel: "Open Freshman projects" }]
+  },
+  "/schematics/freshman/projects": {
+    eyebrow: "Legacy link / Moved",
+    title: "Freshman project schematics have moved",
+    description: "Grade-specific project write-ups now live under Projects.",
+    sections: [],
+    cards: [{ title: "Freshman project list", tag: "PROJECTS / FRESHMAN", description: "Open the new Freshman project collection.", image: "assets/images/project.png", imageAlt: "Electronics project placeholder", path: "/projects/freshman/projects", linkLabel: "Open project list" }]
+  },
+  "/schematics/sophomore": {
+    eyebrow: "Legacy link / Moved",
+    title: "Sophomore projects have moved",
+    description: "Grade-specific work is now organized under Projects. This old address remains available for bookmarked links.",
+    sections: [{ heading: "Continue to Projects", text: "Open the Sophomore project area to browse or add grade-specific project documentation." }],
+    cards: [{ title: "Sophomore projects", tag: "PROJECTS / SOPHOMORE", description: "Open the new grade-level project area.", image: "assets/images/cover-led-current.png", imageAlt: "Electronics project illustration", path: "/projects/sophomore", linkLabel: "Open Sophomore projects" }]
+  },
+  "/schematics/sophomore/projects": {
+    eyebrow: "Legacy link / Moved",
+    title: "Sophomore project schematics have moved",
+    description: "Grade-specific project write-ups now live under Projects.",
+    sections: [],
+    cards: [{ title: "Sophomore project list", tag: "PROJECTS / SOPHOMORE", description: "Open the new Sophomore project collection.", image: "assets/images/project.png", imageAlt: "Electronics project placeholder", path: "/projects/sophomore/projects", linkLabel: "Open project list" }]
+  },
+  "/schematics/junior": {
+    eyebrow: "Legacy link / Moved",
+    title: "Junior projects have moved",
+    description: "Grade-specific work is now organized under Projects. This old address remains available for bookmarked links.",
+    sections: [{ heading: "Continue to Projects", text: "Open the Junior project area to browse or add grade-specific project documentation." }],
+    cards: [{ title: "Junior projects", tag: "PROJECTS / JUNIOR", description: "Open the new grade-level project area.", image: "assets/images/cover-transistor-switch.png", imageAlt: "Electronics project illustration", path: "/projects/junior", linkLabel: "Open Junior projects" }]
+  },
+  "/schematics/junior/projects": {
+    eyebrow: "Legacy link / Moved",
+    title: "Junior project schematics have moved",
+    description: "Grade-specific project write-ups now live under Projects.",
+    sections: [],
+    cards: [{ title: "Junior project list", tag: "PROJECTS / JUNIOR", description: "Open the new Junior project collection.", image: "assets/images/project.png", imageAlt: "Electronics project placeholder", path: "/projects/junior/projects", linkLabel: "Open project list" }]
+  },
+  "/schematics/senior": {
+    eyebrow: "Legacy link / Moved",
+    title: "Senior projects have moved",
+    description: "Grade-specific work is now organized under Projects. This old address remains available for bookmarked links.",
+    sections: [{ heading: "Continue to Projects", text: "Open the Senior project area to browse or add grade-specific project documentation." }],
+    cards: [{ title: "Senior projects", tag: "PROJECTS / SENIOR", description: "Open the new grade-level project area.", image: "assets/images/workshop-banner.png", imageAlt: "Workshop project illustration", path: "/projects/senior", linkLabel: "Open Senior projects" }]
+  },
+  "/schematics/senior/projects": {
+    eyebrow: "Legacy link / Moved",
+    title: "Senior project schematics have moved",
+    description: "Grade-specific project write-ups now live under Projects.",
+    sections: [],
+    cards: [{ title: "Senior project list", tag: "PROJECTS / SENIOR", description: "Open the new Senior project collection.", image: "assets/images/project.png", imageAlt: "Electronics project placeholder", path: "/projects/senior/projects", linkLabel: "Open project list" }]
+  },
   "/projects": {
-    eyebrow: "Project Library",
-    title: "Projects",
-    description: "A project library built around how work actually gets done: begin with the purpose, understand the design choices, review the drawing and parts, follow the physical build steps in order, then verify the result. Supporting references and troubleshooting notes stay with each project so the important details are not scattered across separate documents."
+    eyebrow: "Class Projects",
+    title: "Projects by grade",
+    description: "Browse the work completed across the four years of the electronics program. Each year has its own project collection so finished builds, design records, documentation, and lessons learned stay organized by class level.",
+    sections: [{ heading: "Choose your class year", text: "Select a grade below to find projects associated with that year. These collections are for real class projects and student builds; commonly used circuit references are in Schematics." }]
+  },
+  "/projects/freshman": {
+    eyebrow: "Projects / Freshman",
+    title: "Freshman projects",
+    description: "Introductory projects and first-year builds. Records can capture the project purpose, design decisions, drawings, materials, testing results, and reflections appropriate to the assignment.",
+    sections: [{ heading: "First-year project collection", text: "Open the Projects list to view documented Freshman builds. Shared circuit fundamentals remain in Schematics and are not automatically assigned to a grade." }]
+  },
+  "/projects/freshman/projects": {
+    eyebrow: "Projects / Freshman / Project list",
+    title: "Freshman project list",
+    description: "Documented class projects assigned to the Freshman collection.",
+    sections: []
+  },
+  "/projects/sophomore": {
+    eyebrow: "Projects / Sophomore",
+    title: "Sophomore projects",
+    description: "Second-year project work, including builds that develop circuit design, measurement, component selection, and technical documentation skills.",
+    sections: [{ heading: "Second-year project collection", text: "Open the Projects list to browse documented Sophomore builds. Add a project to this collection by setting its grade level to Sophomore in the project data." }]
+  },
+  "/projects/sophomore/projects": {
+    eyebrow: "Projects / Sophomore / Project list",
+    title: "Sophomore project list",
+    description: "Documented class projects assigned to the Sophomore collection.",
+    sections: []
+  },
+  "/projects/junior": {
+    eyebrow: "Projects / Junior",
+    title: "Junior projects",
+    description: "Third-year project work with room for more involved systems, measurements, design iterations, and supporting technical records.",
+    sections: [{ heading: "Third-year project collection", text: "Open the Projects list to browse documented Junior builds. Add a project to this collection by setting its grade level to Junior in the project data." }]
+  },
+  "/projects/junior/projects": {
+    eyebrow: "Projects / Junior / Project list",
+    title: "Junior project list",
+    description: "Documented class projects assigned to the Junior collection.",
+    sections: []
+  },
+  "/projects/senior": {
+    eyebrow: "Projects / Senior",
+    title: "Senior projects",
+    description: "Senior-level builds, larger systems, capstone work, and polished documentation of completed designs.",
+    sections: [{ heading: "Fourth-year project collection", text: "Open the Projects list to browse documented Senior builds. Add a project to this collection by setting its grade level to Senior in the project data." }]
+  },
+  "/projects/senior/projects": {
+    eyebrow: "Projects / Senior / Project list",
+    title: "Senior project list",
+    description: "Documented class projects assigned to the Senior collection.",
+    sections: []
   },
   "/inventory": {
     eyebrow: "Shop Inventory / Master Catalog",

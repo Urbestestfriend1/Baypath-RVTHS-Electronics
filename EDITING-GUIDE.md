@@ -184,3 +184,11 @@ Add showcase entries in `data/spotlights.js`. The homepage chooses a published s
 Recommended fields: `slug`, `published`, `featured`, `title`, `creatorName`, `classYear`, `category`, `dateLabel`, `summary`, `story`, `contribution`, `highlights`, `featuredImage`, `featuredImageAlt`, optional `gallery`, and optional `videoId`.
 
 For a video, set `videoId` to the 11-character YouTube video ID (not the full URL). The site embeds it using YouTube's privacy-enhanced `youtube-nocookie.com` player. Leave the field out if there is no approved video.
+
+
+## Projects vs. Schematics
+
+- **Projects** is organized by class year: Freshman, Sophomore, Junior, and Senior. A project record should have a `gradeLevel` (or a matching `grade` / `classYear`) of Freshman, Sophomore, Junior, or Senior to appear in that year's project list.
+- **Schematics** is the shared reference shelf for reusable circuits. It focuses on what the circuit does and how to read the drawing; the linked project guide contains the full materials list and build/testing instructions.
+- Three general circuit examples (555 timer, LED current limiter, NPN transistor switch) remain available as project guides and are linked from Schematics. They are not assigned to a grade unless a class record explicitly identifies the year.
+- Old bookmarked `/schematics/freshman`, `/schematics/sophomore`, `/schematics/junior`, and `/schematics/senior` paths now point visitors to the new Projects structure.

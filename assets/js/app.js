@@ -606,15 +606,29 @@
       '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>One shared source of truth.</strong><p>Records are stored centrally in Supabase, not in this browser. Use a consistent part number and verify physical counts before relying on quantities. This page listens for changes so the catalog can refresh automatically.</p></div></aside></div>';
   }
 
-  function renderProjectGallery(path) {
-    const realCount = projects.filter(p => !p.template).length;
-    const ready = projects.length
-      ? '<div class="project-grid">' + projects.map(projectCard).join("") + '</div>'
-      : '<div class="empty-projects"><div><strong>The project shelf is empty for now.</strong><p>Project write-ups will appear here as the class collection grows.</p></div></div>';
-    const countText = realCount + (realCount === 1 ? " PROJECT" : " PROJECTS");
+  function renderGradeProjectGallery(path, gradeKey) {
+    const gradeLabels = {
+      freshman: ["freshman", "grade9", "9th", "9thgrade", "9"],
+      sophomore: ["sophomore", "grade10", "10th", "10thgrade", "10"],
+      junior: ["junior", "grade11", "11th", "11thgrade", "11"],
+      senior: ["senior", "grade12", "12th", "12thgrade", "12"]
+    };
+    const label = gradeKey.charAt(0).toUpperCase() + gradeKey.slice(1);
+    const normalize = value => String(value == null ? "" : value).toLowerCase().replace(/[^a-z0-9]/g, "");
+    const validLabels = gradeLabels[gradeKey] || [normalize(gradeKey)];
+    const items = projects.filter(project => !project.template &&
+      [project.gradeLevel, project.classYear, project.grade, project.year].some(value => validLabels.includes(normalize(value)))
+    );
+    const ready = items.length
+      ? '<div class="project-grid">' + items.map(projectCard).join("") + '</div>'
+      : '<div class="project-empty-by-grade"><strong>No ' + esc(label) + ' projects have been added yet.</strong>' +
+        '<p>When a class project is documented and assigned to ' + esc(label) + ', it will appear here. Shared reusable circuit references are available in Schematics.</p>' +
+        '<a class="text-link" href="#/schematics/common">Browse common circuits ↗</a></div>';
+    const countText = items.length + (items.length === 1 ? " PROJECT" : " PROJECTS");
     return '<div class="page-shell">' + breadcrumbs(path) +
-      '<header class="page-intro"><div><p class="eyebrow">PROJECT LIBRARY</p><h1>Projects</h1><p>Project pages separate the design plan, circuit drawing, parts, numbered build instructions, and test checklist.</p></div><span class="count-label">' + countText + '</span></header>' +
-      ready + callout({title:"Inside each project",text:"Start with the design process, then follow the build instructions in order. Use the verification checklist to test the result and the datasheets to confirm part ratings."}) + '</div>';
+      '<header class="page-intro"><div><p class="eyebrow">PROJECTS / ' + esc(label.toUpperCase()) + '</p><h1>' + esc(label) + ' project list</h1>' +
+      '<p>Class projects and student builds assigned to this year. Complete design records and tutorials remain with each project; generic circuit references live in Schematics.</p></div><span class="count-label">' + countText + '</span></header>' +
+      ready + '</div>';
   }
 
   function bulletList(items, emptyText) {
@@ -808,7 +822,6 @@
   }
 
   function renderPage(path) {
-    if (path === "/projects") return renderProjectGallery(path);
     const page = pages[path];
     if (!page) return '<div class="page-shell">' + breadcrumbs(path) + '<header class="page-intro"><div><p class="eyebrow">404 / NOT FOUND</p><h1>Page not found</h1><p>This page is not available. Check the navigation or return to the home page.</p><a class="button button-outline" href="#/">Return home</a></div></header></div>';
     const content = sectionMarkup(page.sections) + childCards(path) + contentCards(page.cards) + callout(page.callout);
@@ -831,10 +844,13 @@
     const spotlight = spotlightFor(path);
     renderTop(path);
     renderContext(path, project, spotlight);
+    const gradeProjectMatch = path.match(/^\/projects\/(freshman|sophomore|junior|senior)\/projects$/);
     const output = path === "/" ? renderHome()
       : path === "/inventory" ? renderInventory(path)
       : path === "/account" ? renderAccountPage(path)
       : path === "/spotlights" ? renderSpotlightGallery(path)
+      : path === "/projects" ? renderPage(path)
+      : gradeProjectMatch ? renderGradeProjectGallery(path, gradeProjectMatch[1])
       : spotlight ? renderSpotlightDetail(spotlight)
       : project ? renderProjectDetail(project, path)
       : renderPage(path);
