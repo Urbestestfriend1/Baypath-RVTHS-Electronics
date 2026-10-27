@@ -585,6 +585,8 @@
     const gradeValue = d.gradeLevel || d.grade || d.classYear || "";
     const videoValue = d.videoUrl || d.videoId || "";
     const principle = d.principle || {};
+    const featuredChecked = type === "spotlight" ? row.featured === true : d.featured === true;
+    const featuredLabel = type === "spotlight" ? "Feature on homepage Spotlight rotation" : "Feature in project guide highlights";
     return '<section class="site-content-editor" id="site-content-editor" aria-labelledby="site-content-editor-title">' +
       '<div class="content-editor-heading"><div><p class="admin-panel-eyebrow">CONTENT WORKSPACE</p><h3 id="site-content-editor-title">' + (row.id ? 'Edit content' : 'Create content') + '</h3><p>Save a draft, review it on the site, then publish when it is ready.</p></div><button type="button" class="button button-outline" data-content-cancel><span aria-hidden="true">×</span> Close editor</button></div>' +
       (contentEditorMessage ? '<p class="account-error" role="alert">' + esc(contentEditorMessage) + '</p>' : '') +
@@ -628,7 +630,7 @@
       area("References / datasheets", "files", rowsToText(d.files || [], ["label", "href", "description"]), 3, "One per line: Link label | URL | Description") +
       input("Related project slug (for schematics)", "relatedProjectSlug", d.relatedProjectSlug || "", 'placeholder="optional-project-slug"') +
       area("Final notes", "notes", d.notes || "", 3) +
-      '<div class="content-editor-publish"><label><input type="checkbox" name="published"' + (row.published === true ? ' checked' : '') + '> Published — visible to all visitors</label><label><input type="checkbox" name="featured"' + (row.featured === true ? ' checked' : '') + '> Feature on homepage rotation (Spotlights)</label></div>' +
+      '<div class="content-editor-publish"><label><input type="checkbox" name="published"' + (row.published === true ? ' checked' : '') + '> Published — visible to all visitors</label>' + (type !== "schematic" ? '<label><input type="checkbox" name="featured"' + (featuredChecked ? ' checked' : '') + '> ' + esc(featuredLabel) + '</label>' : '') + '</div>' +
       '</div><p class="content-editor-upload-note">Files are stored in the public site media bucket. Each file must be 50 MB or smaller. Do not upload private student information.</p>' +
       '<div class="content-editor-actions"><button class="button button-accent" type="submit"><span aria-hidden="true">✓</span> Save content</button><button class="button button-outline" type="button" data-content-cancel>Cancel</button></div></form></section>';
   }
