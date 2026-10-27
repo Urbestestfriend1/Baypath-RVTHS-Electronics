@@ -6,6 +6,16 @@
   const pages = window.SHOP_PAGES || {};
   const projects = window.SHOP_PROJECTS || [];
   const spotlights = window.SHOP_SPOTLIGHTS || [];
+  const baseProjects = projects.map(item => ({ ...item }));
+  const baseSpotlights = spotlights.map(item => ({ ...item }));
+  const basePages = { ...pages };
+  let siteContent = [];
+  let siteContentLoading = true;
+  let siteContentError = "";
+  let contentEditorOpen = false;
+  let contentEditorType = "spotlight";
+  let contentEditorRecord = null;
+  let contentEditorMessage = "";
   let inventory = [];
   const supabaseConfig = window.BAYPATH_SUPABASE_CONFIG || {};
   let supabaseClient = null;
@@ -377,6 +387,87 @@
     else { adminUsers = Array.isArray(data && data.users) ? data.users : []; }
     if(pathNow() === "/account") render();
   }
+  function applySiteContentRecords(records) {
+    siteContent = Array.isArray(records) ? records : [];
+    projects.splice(0, projects.length, ...baseProjects.map(item => ({ ...item })));
+    spotlights.splice(0, spotlights.length, ...baseSpotlights.map(item => ({ ...item })));
+    Object.keys(pages).forEach(key => { delete pages[key]; });
+    Object.assign(pages, basePages);
+    for (const row of siteContent) {
+      const data = row && row.content && typeof row.content === "object" ? row.content : {};
+      const common = { ...data, slug: row.slug, title: row.title || data.title || row.slug,
+        _siteContentId: row.id, _siteContentType: row.content_type,
+        _sitePublished: row.published === true, featured: row.featured === true };
+      if (row.content_type === "project") {
+        const idx = projects.findIndex(item => item.slug === row.slug);
+        if (idx >= 0) projects[idx] = { ...projects[idx], ...common };
+        else projects.push(common);
+      } else if (row.content_type === "spotlight") {
+        common.published = row.published === true;
+        const idx = spotlights.findIndex(item => item.slug === row.slug);
+        if (idx >= 0) spotlights[idx] = { ...spotlights[idx], ...common };
+        else spotlights.push(common);
+      } else if (row.content_type === "schematic") {
+        common._contentType = "schematic";
+        pages["/schematics/" + row.slug] = common;
+      }
+    }
+  }
+
+  async function loadSiteContent(shouldRender = false) {
+    if (!supabaseClient) { siteContentLoading = false; return; }
+    siteContentLoading = true; siteContentError = "";
+    const { data, error } = await supabaseClient.from("site_content").select("*").order("updated_at", { ascending: false });
+    siteContentLoading = false;
+    if (error) { siteContentError = error.message || "Could not load the site content."; return; }
+    applySiteContentRecords(data || []);
+    if (shouldRender) render();
+  }
+
+  function isActiveAdmin() { return Boolean(isActiveAccount() && currentRole === "admin"); }
+  function rowsToText(items, fields) {
+    return (Array.isArray(items) ? items : []).map(item =>
+      fields.map(field => String(item && item[field] != null ? item[field] : "").replace(/\|/g, "/").replace(/\r?\n/g, " ")).join(" | ")
+    ).join("\n");
+  }
+  function textToLines(value) {
+    return String(value || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  }
+  function textToRows(value, fields) {
+    return textToLines(value).map(line => {
+      const pieces = line.split("|").map(part => part.trim()), item = {};
+      fields.forEach((field, index) => { item[field] = pieces[index] || ""; });
+      return item;
+    }).filter(item => Object.values(item).some(Boolean));
+  }
+  function videoIdFromValue(value) {
+    const raw = String(value || "").trim();
+    if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
+    const match = raw.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i);
+    return match ? match[1] : "";
+  }
+  function contentVideoBlock(item, title) {
+    const videoValue = String(item && (item.videoUrl || item.video) || "").trim();
+    const videoId = videoIdFromValue(item && item.videoId) || videoIdFromValue(videoValue);
+    if (videoId) return youtubeEmbed(videoId, title || item.title || "Project video");
+    if (/^https:\/\//i.test(videoValue) && /\.(mp4|webm)(?:[?#].*)?$/i.test(videoValue)) {
+      return '<section class="spotlight-block spotlight-video-block"><div class="spotlight-block-heading"><p class="section-overline">VIDEO</p><h2>Watch the creation</h2></div><div class="spotlight-video"><video controls playsinline preload="metadata"><source src="' + esc(videoValue) + '">Your browser does not support embedded video.</video></div></section>';
+    }
+    return "";
+  }
+  async function uploadSiteMedia(file, contentType, slug, folder) {
+    if (!supabaseClient || !isActiveAdmin()) throw new Error("An active administrator account is required to upload media.");
+    if (!file) return "";
+    const allowed = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/avif", "video/mp4", "video/webm"];
+    if (!allowed.includes(file.type)) throw new Error("Use PNG, JPEG, WebP, GIF, AVIF, MP4, or WebM files.");
+    if (file.size > 50 * 1024 * 1024) throw new Error("Each media file must be 50 MB or smaller.");
+    const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "upload";
+    const objectPath = contentType + "/" + (slug || "untitled") + "/" + folder + "-" + Date.now() + "-" + safeName;
+    const { error } = await supabaseClient.storage.from("site-media").upload(objectPath, file, { cacheControl: "3600", contentType: file.type, upsert: false });
+    if (error) throw error;
+    return supabaseClient.storage.from("site-media").getPublicUrl(objectPath).data.publicUrl;
+  }
+
   async function syncAuthSession(session){
     signedInUser = session && session.user ? session.user : null;
     currentProfile = null; currentRole = null; adminUsers = []; adminUsersError = "";
@@ -386,12 +477,14 @@
       else if(data){ currentProfile = data; currentRole = data.role; if(!isVerifiedAccount()){ accountMessage = "Verify your email address before using this account."; accountMessageKind = "error"; } else if(data.is_active){ accountMessage = ""; } else { accountMessage = "This account is not active yet. Ask the site administrator to invite or activate it."; accountMessageKind = "error"; } }
       else { accountMessage = "Your account exists, but its profile is missing. Ask an administrator to repair it."; accountMessageKind = "error"; }
       await refreshDatabaseInventory();
+      await loadSiteContent(false);
       updateAccountLink();
       if(currentRole === "admin" && isActiveAccount()) await loadAdminUsers();
     } else {
       currentProfile = null; currentRole = null;
       updateAccountLink();
       await refreshDatabaseInventory();
+      await loadSiteContent(false);
     }
     render();
   }
@@ -410,6 +503,10 @@
         .on("postgres_changes", { event: "*", schema: "public", table: "inventory_items" }, async () => {
           await refreshDatabaseInventory();
           if(pathNow() === "/inventory" || (pathNow() === "/account" && currentRole === "admin")) { inventoryState.page = 1; render(); }
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "site_content" }, async () => {
+          await loadSiteContent(false);
+          if(pathNow() === "/" || pathNow().startsWith("/projects") || pathNow().startsWith("/schematics") || pathNow().startsWith("/spotlights") || (pathNow() === "/account" && isActiveAdmin())) render();
         })
         .subscribe();
       supabaseClient.auth.onAuthStateChange((_event, session) => {
