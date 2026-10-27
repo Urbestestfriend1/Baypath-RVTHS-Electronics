@@ -396,9 +396,9 @@
     if(adminUsersError) return '<p class="account-error" role="alert">'+esc(adminUsersError)+'</p><button class="button button-outline" type="button" data-admin-users-refresh>Retry</button>';
     if(!adminUsers.length) return '<p class="account-muted">No user profiles found yet.</p>';
     return '<div class="admin-user-list">'+adminUsers.map(user=>
-      '<div class="admin-user-row"><div class="admin-user-identity"><strong>'+esc(user.display_name||user.email||"Unnamed user")+'</strong><span>'+esc(user.email||"Email unavailable")+'</span><small>'+esc(user.id)+'</small>'+(user.is_active?'':'<span class="account-pending">Pending activation</span>')+'</div>' +
+      '<div class="admin-user-row"><div class="admin-user-identity"><strong>'+esc(user.display_name||user.email||"Unnamed user")+'</strong><span>'+esc(user.email||"Email unavailable")+'</span><small>'+esc(user.id)+'</small>'+(user.email_confirmed?'':'<span class="account-pending">Email not verified</span>')+(user.is_active?'':'<span class="account-pending">Inactive account</span>')+'</div>' +
       '<label class="admin-role-control"><span>Role</span><select data-user-role="'+esc(user.id)+'"><option value="viewer"'+(user.role==="viewer"?" selected":"")+'>Viewer</option><option value="editor"'+(user.role==="editor"?" selected":"")+'>Inventory editor</option><option value="admin"'+(user.role==="admin"?" selected":"")+'>Administrator</option></select></label>' +
-      '<div class="admin-user-actions"><button class="button button-outline" type="button" data-user-role-save="'+esc(user.id)+'">Save role</button>'+(user.id!== (signedInUser&&signedInUser.id)?'<button class="button button-danger" type="button" data-user-delete="'+esc(user.id)+'">Remove</button>':'<span class="account-muted">You</span>')+'</div></div>'
+      '<div class="admin-user-actions"><button class="button button-outline" type="button" data-user-role-save="'+esc(user.id)+'">Save role</button>'+(user.id!== (signedInUser&&signedInUser.id)?'<button class="button button-outline" type="button" data-user-active-toggle="'+esc(user.id)+'" data-next-active="'+(!user.is_active?'true':'false')+'"'+(!user.email_confirmed&&!user.is_active?' disabled title="User must verify their email first"':'')+'>'+(user.is_active?'Deactivate':'Activate')+'</button><button class="button button-danger" type="button" data-user-delete="'+esc(user.id)+'">Remove</button>':'<span class="account-muted">You</span>')+'</div></div>'
     ).join("")+'</div>';
   }
 
@@ -934,6 +934,20 @@
       const {data,error}=await supabaseClient.functions.invoke("admin-users",{body:{action:"set_role",user_id:id,role:selector.value}});
       if(error||(data&&data.error)){window.alert((data&&data.error)||(error&&error.message)||"Could not update role.");saveRole.disabled=false;return;}
       accountMessage="User role updated.";accountMessageKind="info";await loadAdminUsers();render();return;
+    }
+    const activeToggle=event.target.closest("[data-user-active-toggle]");
+    if(activeToggle){
+      if(!supabaseClient||currentRole!=="admin"||!currentProfile||!currentProfile.is_active)return;
+      const id=activeToggle.getAttribute("data-user-active-toggle"),active=activeToggle.getAttribute("data-next-active")==="true";
+      const target=adminUsers.find(user=>user.id===id);
+      if(!id)return;
+      if(active && target && !target.email_confirmed){window.alert("This account must verify its email or accept its invitation before activation.");return;}
+      if(!active && !window.confirm("Deactivate "+(target?target.email:"this account")+"? They will lose access to protected inventory changes and admin tools."))return;
+      activeToggle.disabled=true;
+      const {data,error}=await supabaseClient.functions.invoke("admin-users",{body:{action:"set_active",user_id:id,active}});
+      if(error||(data&&data.error)){window.alert((data&&data.error)||(error&&error.message)||"Could not update account activation.");activeToggle.disabled=false;return;}
+      accountMessage=active?"Account activated.":"Account deactivated.";accountMessageKind="success";
+      await loadAdminUsers();render();return;
     }
     const deleteUser=event.target.closest("[data-user-delete]");
     if(deleteUser){
