@@ -346,7 +346,7 @@
       supabaseClient.auth.getSession().then(({data}) => syncAuthSession(data.session)).catch(error => {
         supabaseInitError = error.message || "Could not check your sign-in session."; render();
       });
-    } catch(error){ supabaseInitError = error.message || "Supabase is not available."; updateAccountLink(); }
+    } catch(error){ supabaseInitError = error.message || "Supabase is not available."; updateAccountLink(); render(); }
   }
   function renderInventoryEditorPanel(){
     if(!canEditInventory()) return "";
