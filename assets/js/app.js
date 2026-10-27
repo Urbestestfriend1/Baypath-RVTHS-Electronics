@@ -337,7 +337,7 @@
       supabaseClient.channel("shared-inventory-live")
         .on("postgres_changes", { event: "*", schema: "public", table: "inventory_items" }, async () => {
           await refreshDatabaseInventory();
-          if(pathNow() === "/inventory") { inventoryState.page = 1; render(); }
+          if(pathNow() === "/inventory" || (pathNow() === "/account" && currentRole === "admin")) { inventoryState.page = 1; render(); }
         })
         .subscribe();
       supabaseClient.auth.onAuthStateChange((_event, session) => {
@@ -508,7 +508,7 @@
     const summary=document.getElementById("inventory-live-summary");if(summary)summary.textContent=total.toLocaleString("en-US")+" matching record"+(total===1?"":"s");
   }
   function renderInventory(path){
-    const categories=inventoryCategories(),areas=inventoryAreas(),isExample=inventory.length>0&&inventory.every(item=>item.recordType==="example");
+    const categories=inventoryCategories(),areas=inventoryAreas();
     const low=inventory.filter(x=>inventoryStock(x).key==="low").length,out=inventory.filter(x=>inventoryStock(x).key==="out").length;
     return '<div class="page-shell inventory-page">'+breadcrumbs(path)+
       '<header class="inventory-page-heading"><div><p class="eyebrow">INVENTORY / MASTER CATALOG</p><h1>Inventory<span class="heading-period">.</span></h1>'+
