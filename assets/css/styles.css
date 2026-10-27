@@ -2136,3 +2136,152 @@ body[data-theme="dark"] .inventory-help-footer strong{color:#edf2f7}
   body[data-theme="dark"] .inventory-help-grid>div{border-bottom-color:#35404d}
   body[data-theme="dark"] .inventory-help-grid>div:last-child{border-bottom:0}
 }
+
+
+/* Supabase account and data-editor UI */
+.account-link{
+  display:inline-flex;align-items:center;justify-content:center;min-height:38px;
+  padding:0 13px;border:1px solid var(--border);border-radius:9px;
+  background:var(--surface);color:var(--text);font-size:12px;font-weight:750;
+  text-decoration:none;white-space:nowrap;transition:background .18s,border-color .18s;
+}
+.account-link:hover{background:var(--raised);border-color:var(--accent)}
+.auth-card,.account-admin,.account-permission-note{
+  max-width:850px;margin:22px 0;padding:24px;border:1px solid var(--border);
+  border-radius:14px;background:var(--surface);box-shadow:0 7px 24px rgba(20,35,55,.045);
+}
+.auth-card{max-width:520px}
+.auth-card-heading{display:flex;align-items:center;gap:13px;margin-bottom:20px}
+.auth-icon{
+  display:grid;place-items:center;width:42px;height:42px;border-radius:12px;
+  background:var(--raised);color:var(--accent);font-size:24px;font-weight:800;
+}
+.auth-card-heading h2,.account-section-heading h2,.account-permission-note h2{
+  margin:0 0 5px;color:var(--text);font-size:19px;letter-spacing:-.025em;
+}
+.auth-card-heading p,.account-section-heading p,.account-permission-note p{
+  margin:0;color:var(--muted);font-size:13px;line-height:1.65;
+}
+.auth-form{display:grid;gap:15px}
+.auth-form label,.admin-invite-form label,.inventory-editor-grid label,.admin-role-control{
+  display:flex;flex-direction:column;gap:6px;color:var(--text);font-size:12px;font-weight:700;
+}
+.auth-form input,.admin-invite-form input,.admin-invite-form select,
+.inventory-editor-grid input,.inventory-editor-grid textarea,.inventory-editor-grid select,
+.admin-role-control select{
+  width:100%;min-width:0;min-height:41px;padding:10px 11px;
+  border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);
+  font:inherit;font-size:13px;font-weight:450;
+}
+.inventory-editor-grid textarea{resize:vertical}
+.auth-form input:focus,.admin-invite-form input:focus,.admin-invite-form select:focus,
+.inventory-editor-grid input:focus,.inventory-editor-grid textarea:focus,
+.admin-role-control select:focus{outline:2px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:1px}
+.auth-form .button{justify-self:start;min-width:140px}
+.account-muted{display:block;margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.account-error,.account-info,.account-success{
+  margin:14px 0;padding:12px 14px;border:1px solid var(--border);border-radius:9px;
+  background:var(--raised);color:var(--text);font-size:13px;line-height:1.55;
+}
+.account-error{border-color:#e7b5b5;background:#fff4f3;color:#8f2828}
+.account-success{border-color:#b7d9c2;background:#f0faf3;color:#1f6237}
+body[data-theme="dark"] .account-error{border-color:#704343;background:#302023;color:#ffcdcd}
+body[data-theme="dark"] .account-success{border-color:#315d43;background:#192d23;color:#bfe8cb}
+.account-summary{
+  display:flex;align-items:center;gap:15px;margin:18px 0;padding:18px 20px;
+  border:1px solid var(--border);border-radius:13px;background:var(--surface);
+}
+.account-avatar{
+  display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;
+  border-radius:50%;background:var(--raised);color:var(--accent);font-size:20px;font-weight:800;
+}
+.account-summary-copy{flex:1;min-width:0}
+.account-summary-copy h2{margin:0 0 4px;color:var(--text);font-size:16px;overflow-wrap:anywhere}
+.account-summary-copy p{margin:0 0 7px;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.account-role{
+  display:inline-flex;padding:4px 8px;border-radius:999px;background:var(--raised);
+  color:var(--text);font-size:11px;font-weight:750;text-transform:capitalize;
+}
+.account-admin{max-width:none}
+.account-section-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 16px}
+.account-section-heading .section-overline{margin:0 0 6px;color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.12em}
+.admin-invite-form{
+  display:grid;grid-template-columns:1fr 1.2fr 1.15fr auto;align-items:end;gap:12px;
+  padding:15px;border:1px solid var(--border);border-radius:10px;background:var(--bg);
+}
+.admin-invite-form>button{min-height:41px}
+.admin-invite-form>p{grid-column:1/-1;margin:0;color:var(--muted);font-size:12px}
+.account-users-heading{margin-top:28px;padding-top:22px;border-top:1px solid var(--border)}
+.admin-user-list{display:grid;gap:10px}
+.admin-user-row{
+  display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(150px,.85fr) auto;
+  align-items:center;gap:14px;padding:13px;border:1px solid var(--border);
+  border-radius:10px;background:var(--bg);
+}
+.admin-user-identity{display:grid;gap:3px;min-width:0}
+.admin-user-identity strong{color:var(--text);font-size:13px;overflow-wrap:anywhere}
+.admin-user-identity>span{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.admin-user-identity small{color:var(--muted);font-size:10px;overflow-wrap:anywhere}
+.admin-role-control select{min-height:36px;padding:7px 8px}
+.admin-user-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.button-danger{
+  display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 10px;
+  border:1px solid #e4b9b9;border-radius:8px;background:transparent;color:#a43636;
+  font:inherit;font-size:11px;font-weight:750;cursor:pointer;
+}
+.button-danger:hover{background:#fff0f0}
+body[data-theme="dark"] .button-danger{border-color:#714444;color:#ffc0c0}
+body[data-theme="dark"] .button-danger:hover{background:#382424}
+.account-permission-note h2{margin-bottom:8px}
+.inventory-auth-notice{
+  margin:17px 0;padding:13px 15px;border:1px solid var(--border);border-radius:10px;
+  background:var(--surface);color:var(--text);
+}
+.inventory-auth-notice strong{display:block;margin-bottom:4px;font-size:13px}
+.inventory-auth-notice p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.inventory-auth-notice a{color:var(--accent);font-weight:750}
+.inventory-editor-panel{
+  margin:20px 0;padding:20px;border:1px solid var(--border);border-radius:13px;
+  background:var(--surface);box-shadow:0 8px 28px rgba(20,35,55,.05);scroll-margin-top:24px;
+}
+.inventory-editor-panel[hidden]{display:none}
+.inventory-editor-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:16px}
+.inventory-editor-heading h2{margin:0 0 5px;color:var(--text);font-size:20px}
+.inventory-editor-heading p:not(.section-overline){margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.inventory-editor-heading .section-overline{margin:0 0 6px;color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.12em}
+.inventory-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.inventory-editor-grid label>span{color:#b53a3a}
+.inventory-editor-wide{grid-column:1/-1}
+.inventory-editor-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:17px;padding-top:14px;border-top:1px solid var(--border)}
+.inventory-editor-actions p{flex:1;margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.inventory-row-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.inventory-row-actions .button{min-height:28px;padding:0 9px;font-size:11px}
+body[data-theme="dark"] .account-error{color:#ffcdcd}
+body[data-theme="dark"] .inventory-editor-panel,
+body[data-theme="dark"] .auth-card,
+body[data-theme="dark"] .account-admin,
+body[data-theme="dark"] .account-summary,
+body[data-theme="dark"] .account-permission-note,
+body[data-theme="dark"] .inventory-auth-notice{box-shadow:none}
+@media(max-width:1000px){
+  .admin-invite-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-invite-form>button{justify-self:start}
+  .admin-user-row{grid-template-columns:minmax(0,1fr) minmax(160px,.85fr)}
+  .admin-user-actions{grid-column:1/-1}
+}
+@media(max-width:680px){
+  .account-link{min-height:34px;padding:0 9px;font-size:11px}
+  .auth-card,.account-admin,.account-permission-note{padding:17px}
+  .account-summary{align-items:flex-start;flex-wrap:wrap;padding:15px}
+  .account-summary-copy{flex-basis:calc(100% - 65px)}
+  .account-summary>button{margin-left:auto}
+  .admin-invite-form{grid-template-columns:1fr}
+  .admin-invite-form>p{grid-column:auto}
+  .admin-user-row{grid-template-columns:1fr}
+  .admin-user-actions{grid-column:auto}
+  .inventory-editor-panel{padding:15px}
+  .inventory-editor-grid{grid-template-columns:1fr}
+  .inventory-editor-wide{grid-column:auto}
+  .inventory-editor-actions{flex-wrap:wrap}
+  .inventory-editor-actions p{flex-basis:100%}
+}
