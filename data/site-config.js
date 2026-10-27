@@ -21,14 +21,14 @@ window.SHOP_CONFIG = {
   heroTitleTop: "ELECTRONICS",
   heroTitleAccent: "Plan it. Build it. Test it.",
   intro: "A working reference for shop projects, schematics, parts, equipment, and the details that help a build go right.",
-  heroImage: "assets/images/inventory-shelf.svg",
+  heroImage: "assets/images/inventory-shelf.png",
   heroImageAlt: "Illustration of organized labeled component storage bins",
   homeCards: [
     {
       eyebrow: "Parts, locations, and counts",
       title: "Inventory",
       description: "Search the master shop catalog by part number, name, category, storage area, quantity, or notes. Filter and sort the complete list, review stock status, and export the current results when you need to work with the data in a spreadsheet.",
-      image: "assets/images/inventory-shelf.svg",
+      image: "assets/images/inventory-shelf.png",
       imageAlt: "Organized component drawers with part labels",
       path: "/inventory",
       linkLabel: "Find a part"
@@ -37,7 +37,7 @@ window.SHOP_CONFIG = {
       eyebrow: "Build, document, and test",
       title: "Projects",
       description: "Follow a project from its purpose and design choices through the schematic, parts and tools, numbered assembly steps, verification checks, and troubleshooting notes. Keep the reasons behind the design close to the actual build procedure.",
-      image: "assets/images/cover-555-timer.svg",
+      image: "assets/images/cover-555-timer.png",
       imageAlt: "555 timer LED flasher project illustration",
       path: "/projects",
       linkLabel: "Browse project files"
@@ -46,7 +46,7 @@ window.SHOP_CONFIG = {
       eyebrow: "Circuits and diagrams",
       title: "Schematics",
       description: "Open circuit drawings by class year or use the common-circuit shelf for shared references. Use each diagram to plan connections and check your wiring, while confirming part ratings and pinouts from the relevant datasheet.",
-      image: "assets/images/schematic.svg",
+      image: "assets/images/schematic.png",
       imageAlt: "Technical circuit-planning illustration",
       path: "/schematics",
       linkLabel: "Browse drawings"
@@ -55,7 +55,7 @@ window.SHOP_CONFIG = {
       eyebrow: "Shared technical reference",
       title: "Common circuits",
       description: "Review reusable circuit examples for timing, LED current limiting, and transistor switching. Each reference includes the design idea, a schematic, component list, build instructions, and ways to test the result.",
-      image: "assets/images/cover-transistor-switch.svg",
+      image: "assets/images/cover-transistor-switch.png",
       imageAlt: "Small transistor switch project illustration",
       path: "/schematics/common",
       linkLabel: "Open circuit shelf"
@@ -64,7 +64,7 @@ window.SHOP_CONFIG = {
       eyebrow: "Safety, equipment, and class material",
       title: "Resources",
       description: "Find shop safety material, tool and equipment references, and shared class notes. The goal is to keep practical information easy to locate and close at hand when working at the bench.",
-      image: "assets/images/resources.svg",
+      image: "assets/images/resources.png",
       imageAlt: "Shop tools and safety reference illustration",
       path: "/resources",
       linkLabel: "Open resources"

@@ -179,13 +179,13 @@
     if (!item || !item.children || !item.children.length) return "";
     return contentCards(item.children.map(child => {
       const page = pages[child.path] || {};
-      return { title: child.label, description: page.description || "Open this section to browse related material.", image: child.image || (child.path.includes("project") ? "assets/images/project.svg" : "assets/images/schematic.svg"), imageAlt: "", path: child.path, tag: child.children ? "SECTION" : "LIBRARY" };
+      return { title: child.label, description: page.description || "Open this section to browse related material.", image: child.image || (child.path.includes("project") ? "assets/images/project.png" : "assets/images/schematic.png"), imageAlt: "", path: child.path, tag: child.children ? "SECTION" : "LIBRARY" };
     }));
   }
 
   function projectCard(project) {
     return '<a class="project-card" href="' + href(projectPath(project)) + '">' +
-      '<div class="project-card-image"><img src="' + esc(project.featuredImage || "assets/images/project.svg") + '" alt="' + esc(project.featuredImageAlt || "") + '" loading="lazy">' +
+      '<div class="project-card-image"><img src="' + esc(project.featuredImage || "assets/images/project.png") + '" alt="' + esc(project.featuredImageAlt || "") + '" loading="lazy">' +
       (project.template ? '<span class="image-label">PROJECT TEMPLATE</span>' : "") + '</div>' +
       '<div class="project-card-body"><div class="project-tags"><span>' + esc(project.grade || "Project") + '</span><span>' + esc(project.category || "Build") + '</span></div>' +
       '<h3>' + esc(project.title || "Untitled project") + '</h3><p>' + esc(project.summary || project.description || "") + '</p><span class="project-card-link">Open project <b>→</b></span></div></a>';
@@ -214,7 +214,7 @@
       '<p class="dashboard-lede">Your shop reference, organized around the work itself. Explore circuit drawings, follow projects from the first idea to final test, and find components by part number or storage location without digging through one long document. The goal is simple: make the information useful at the bench, easy to maintain, and clear enough for someone else to follow.</p>' +
       '<div class="dashboard-actions"><a class="button button-accent" href="#/inventory"><span class="button-icon">⌕</span> Find a part <span class="button-end">↗</span></a><a class="button button-outline" href="#/projects">Explore projects <span class="button-end">↗</span></a></div>' +
       '</div><div class="dashboard-hero-side"><div class="hero-side-top"><span class="hero-status-dot"></span><span>SHOP REFERENCE / 01</span></div>' +
-      '<div class="hero-side-diagram"><img src="assets/images/schematic.svg" alt="" loading="lazy"></div>' +
+      '<div class="hero-side-diagram"><img src="assets/images/schematic.png" alt="" loading="lazy"></div>' +
       '<div class="hero-side-bottom"><span>LOOK IT UP</span><span>BUILD IT RIGHT</span><span>CHECK THE RESULT</span></div></div></header>' +
       '<section class="dashboard-metrics" aria-label="Library overview">' +
       '<div class="metric-card"><span class="metric-icon">◇</span><span class="metric-label">PROJECT LIBRARY</span><strong>' + projects.filter(p => !p.template).length.toString().padStart(2,"0") + '</strong><small>Reference builds and notes</small></div>' +
@@ -646,7 +646,7 @@
   }
 
   function renderProjectDetail(project, path) {
-    const image = project.featuredImage || "assets/images/project.svg";
+    const image = project.featuredImage || "assets/images/project.png";
     const schematic = project.schematicImage || "";
     const facts = (project.facts || []).length
       ? '<div class="project-facts">' + project.facts.map(fact =>

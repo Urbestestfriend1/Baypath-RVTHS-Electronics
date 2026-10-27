@@ -9,7 +9,7 @@ window.SHOP_PAGES = {
     description: "A structured library of circuit drawings and project plans, grouped by class year with a shared shelf for circuits that are useful across the program. Use these pages when you need to understand a connection before you wire it, compare a design, or keep a drawing alongside a build.",
     sections: [{ heading: "Browse schematics", text: "Start with your class-year section when you need a drawing tied to coursework, or use Common for reusable examples that apply to more than one project. Each diagram is a reference for planning and checking connections, not a substitute for checking component ratings and the instructor's instructions." }],
     cards: [
-      { title: "Common schematics", tag: "SHARED REFERENCE", description: "Circuit fundamentals and repeat-use examples, including the 555 timer.", image: "assets/images/schematic-555-timer.svg", imageAlt: "555 timer schematic", path: "/schematics/common", linkLabel: "View common circuits" }
+      { title: "Common schematics", tag: "SHARED REFERENCE", description: "Circuit fundamentals and repeat-use examples, including the 555 timer.", image: "assets/images/schematic-555-timer.png", imageAlt: "555 timer schematic", path: "/schematics/common", linkLabel: "View common circuits" }
     ]
   },
   "/schematics/freshman": {
@@ -66,9 +66,9 @@ window.SHOP_PAGES = {
     description: "A shared shelf of dependable circuit examples for common electronics tasks. Each reference is intended to explain the circuit's job, show the connections, identify the required parts, and give you a sensible way to test the result.",
     sections: [{ heading: "Circuit examples", text: "These worked examples cover three useful building blocks: a 555 timer that produces a repeating output, a resistor that limits LED current, and an NPN transistor that switches a small load. Each project page keeps its design reasoning, schematic, parts and tools, numbered build steps, verification checks, and common troubleshooting advice in one consistent workflow." }],
     cards: [
-      { title: "555 Timer LED Flasher", tag: "TIMING CIRCUITS", description: "An astable 555 timer produces a repeating output and blinks an LED.", image: "assets/images/cover-555-timer.svg", imageAlt: "555 timer LED flasher", path: "/projects/555-timer-led-flasher", linkLabel: "Open circuit" },
-      { title: "LED and Current-Limiting Resistor", tag: "CIRCUIT FUNDAMENTALS", description: "Use Ohm's law to estimate current in a simple series circuit.", image: "assets/images/cover-led-current.svg", imageAlt: "LED and current-limiting resistor circuit", path: "/projects/led-current-limiter", linkLabel: "Open circuit" },
-      { title: "NPN Transistor as a Switch", tag: "TRANSISTORS", description: "A small control current switches an LED load through an NPN transistor.", image: "assets/images/cover-transistor-switch.svg", imageAlt: "NPN transistor switch", path: "/projects/npn-transistor-switch", linkLabel: "Open circuit" }
+      { title: "555 Timer LED Flasher", tag: "TIMING CIRCUITS", description: "An astable 555 timer produces a repeating output and blinks an LED.", image: "assets/images/cover-555-timer.png", imageAlt: "555 timer LED flasher", path: "/projects/555-timer-led-flasher", linkLabel: "Open circuit" },
+      { title: "LED and Current-Limiting Resistor", tag: "CIRCUIT FUNDAMENTALS", description: "Use Ohm's law to estimate current in a simple series circuit.", image: "assets/images/cover-led-current.png", imageAlt: "LED and current-limiting resistor circuit", path: "/projects/led-current-limiter", linkLabel: "Open circuit" },
+      { title: "NPN Transistor as a Switch", tag: "TRANSISTORS", description: "A small control current switches an LED load through an NPN transistor.", image: "assets/images/cover-transistor-switch.png", imageAlt: "NPN transistor switch", path: "/projects/npn-transistor-switch", linkLabel: "Open circuit" }
     ]
   },
   "/projects": {

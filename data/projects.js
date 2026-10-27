@@ -13,9 +13,9 @@ window.SHOP_PROJECTS = [
     featured: true,
     summary: "A classic 555 timer circuit that turns a steady 5 V supply into a repeating blink.",
     description: "The NE555 runs in astable mode: a capacitor charges and discharges through two resistors, and the output switches high and low as it does. It is a useful first look at timing circuits because every part has a visible job.",
-    featuredImage: "assets/images/cover-555-timer.svg",
+    featuredImage: "assets/images/cover-555-timer.png",
     featuredImageAlt: "555 timer IC, resistors, capacitor, and blinking LED on a breadboard",
-    schematicImage: "assets/images/schematic-555-timer.svg",
+    schematicImage: "assets/images/schematic-555-timer.png",
     schematicAlt: "Astable NE555 LED flasher schematic with timing resistors and capacitor",
     facts: [
       { label: "Supply", value: "5 V DC" },
@@ -103,8 +103,8 @@ window.SHOP_PROJECTS = [
       { title: "Power up and observe", description: "Check for misplaced wires and reversed electrolytic polarity before applying 5 V. The LED should blink steadily. Measure the period if you have a multimeter with frequency or duty-cycle mode.", why: "A final unpowered inspection catches shorts and reversed parts before current can flow.", check: "The LED blinks steadily. Disconnect power before changing any wire." }
     ],
     gallery: [
-      { image: "assets/images/cover-555-timer.svg", alt: "555 timer breadboard build illustration", caption: "Breadboard layout concept" },
-      { image: "assets/images/schematic-555-timer.svg", alt: "555 astable circuit schematic", caption: "Circuit connections" }
+      { image: "assets/images/cover-555-timer.png", alt: "555 timer breadboard build illustration", caption: "Breadboard layout concept" },
+      { image: "assets/images/schematic-555-timer.png", alt: "555 astable circuit schematic", caption: "Circuit connections" }
     ],
     files: [
       { label: "NE555 timer datasheet — Texas Instruments", href: "https://www.ti.com/lit/ds/symlink/ne555.pdf", description: "Pinout, operating limits, and manufacturer application information." },
@@ -121,9 +121,9 @@ window.SHOP_PROJECTS = [
     featured: true,
     summary: "A one-LED circuit that shows why a resistor belongs in series with an LED.",
     description: "A 5 V supply, one LED, and one resistor make a useful first circuit. Measure the voltage across the resistor, estimate current with Ohm's law, and compare the result with the LED's forward-voltage rating.",
-    featuredImage: "assets/images/cover-led-current.svg",
+    featuredImage: "assets/images/cover-led-current.png",
     featuredImageAlt: "LED and resistor arranged on a small breadboard",
-    schematicImage: "assets/images/schematic-led-current.svg",
+    schematicImage: "assets/images/schematic-led-current.png",
     schematicAlt: "5 volt source feeding a 330 ohm resistor and LED in series",
     facts: [
       { label: "Supply", value: "5 V DC" },
@@ -204,8 +204,8 @@ window.SHOP_PROJECTS = [
       { title: "Measure and calculate", description: "Measure the voltage across the resistor. Estimate current using I = Vresistor / 330 Ω, then compare the result with the approximate value calculated from the LED's forward voltage.", why: "Measuring the resistor's voltage lets you estimate current using Ohm's law.", check: "Record the measured voltage and calculate I = Vresistor / 330 Ω." }
     ],
     gallery: [
-      { image: "assets/images/cover-led-current.svg", alt: "LED and resistor on a breadboard", caption: "Simple series circuit" },
-      { image: "assets/images/schematic-led-current.svg", alt: "LED resistor circuit diagram", caption: "Schematic" }
+      { image: "assets/images/cover-led-current.png", alt: "LED and resistor on a breadboard", caption: "Simple series circuit" },
+      { image: "assets/images/schematic-led-current.png", alt: "LED resistor circuit diagram", caption: "Schematic" }
     ],
     files: [
       { label: "Ohm's law reference", href: "https://www.electronics-tutorials.ws/dccircuits/dcp_2.html", description: "Voltage, current, and resistance in a simple DC circuit." }
@@ -221,9 +221,9 @@ window.SHOP_PROJECTS = [
     featured: false,
     summary: "Use a small NPN transistor to switch an LED with a separate control signal.",
     description: "A transistor can control a load using a much smaller current at its base. This low-side switching circuit uses a pushbutton as the control input and an NPN transistor to turn the LED on and off.",
-    featuredImage: "assets/images/cover-transistor-switch.svg",
+    featuredImage: "assets/images/cover-transistor-switch.png",
     featuredImageAlt: "Small NPN transistor, LED, resistor, and pushbutton components",
-    schematicImage: "assets/images/schematic-transistor-switch.svg",
+    schematicImage: "assets/images/schematic-transistor-switch.png",
     schematicAlt: "NPN transistor used as a low-side switch with base resistor and LED load",
     facts: [
       { label: "Supply", value: "5 V DC" },
@@ -307,8 +307,8 @@ window.SHOP_PROJECTS = [
       { title: "Test the switch", description: "With the supply disconnected, check the wiring and then apply 5 V. The LED should turn on while the button is pressed and turn off when released.", why: "Testing both button states confirms the control input and switched load work together.", check: "LED on while pressed; LED off when released. Disconnect power if the transistor heats up." }
     ],
     gallery: [
-      { image: "assets/images/cover-transistor-switch.svg", alt: "Transistor, pushbutton, and LED components", caption: "Parts used in the demonstration" },
-      { image: "assets/images/schematic-transistor-switch.svg", alt: "NPN transistor low-side switch schematic", caption: "Switching circuit" }
+      { image: "assets/images/cover-transistor-switch.png", alt: "Transistor, pushbutton, and LED components", caption: "Parts used in the demonstration" },
+      { image: "assets/images/schematic-transistor-switch.png", alt: "NPN transistor low-side switch schematic", caption: "Switching circuit" }
     ],
     files: [
       { label: "PN2222A datasheet — onsemi", href: "https://www.onsemi.com/pdf/datasheet/p2n2222a-d.pdf", description: "Package information and electrical characteristics for the PN2222A family." }
