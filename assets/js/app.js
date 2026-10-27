@@ -461,8 +461,8 @@
     if(!adminUsers.length) return '<p class="account-muted">No user profiles found yet.</p>';
     return '<div class="admin-user-list">'+adminUsers.map(user=>
       '<div class="admin-user-row"><div class="admin-user-identity"><strong>'+esc(user.display_name||user.email||"Unnamed user")+'</strong><span>'+esc(user.email||"Email unavailable")+'</span><small>'+esc(user.id)+'</small>'+(user.email_confirmed?'':'<span class="account-pending">Email not verified</span>')+(user.is_active?'':'<span class="account-pending">Inactive account</span>')+'</div>' +
-      '<label class="admin-role-control"><span>Role</span><select data-user-role="'+esc(user.id)+'"><option value="viewer"'+(user.role==="viewer"?" selected":"")+'>Viewer</option><option value="editor"'+(user.role==="editor"?" selected":"")+'>Inventory editor</option><option value="admin"'+(user.role==="admin"?" selected":"")+'>Administrator</option></select></label>' +
-      '<div class="admin-user-actions"><button class="button button-outline" type="button" data-user-role-save="'+esc(user.id)+'">Save role</button>'+(user.id!== (signedInUser&&signedInUser.id)?'<button class="button button-outline" type="button" data-user-active-toggle="'+esc(user.id)+'" data-next-active="'+(!user.is_active?'true':'false')+'"'+(!user.email_confirmed&&!user.is_active?' disabled title="User must verify their email first"':'')+'>'+(user.is_active?'Deactivate':'Activate')+'</button><button class="button button-danger" type="button" data-user-delete="'+esc(user.id)+'">Remove</button>':'<span class="account-muted">You</span>')+'</div></div>'
+      '<label class="admin-role-control"><span>Role</span><select data-user-role="'+esc(user.id)+'"'+(user.id===(signedInUser&&signedInUser.id)?' disabled title="Your own role cannot be changed"':'')+'><option value="viewer"'+(user.role==="viewer"?" selected":"")+'>Viewer</option><option value="editor"'+(user.role==="editor"?" selected":"")+'>Inventory editor</option><option value="admin"'+(user.role==="admin"?" selected":"")+'>Administrator</option></select></label>' +
+      '<div class="admin-user-actions">' + (user.id!== (signedInUser&&signedInUser.id)?'<button class="button button-outline" type="button" data-user-role-save="'+esc(user.id)+'"><span aria-hidden="true">♙</span> Save role</button>':'<span class="account-muted">Your role is locked</span>')+(user.id!== (signedInUser&&signedInUser.id)?'<button class="button button-outline" type="button" data-user-active-toggle="'+esc(user.id)+'" data-next-active="'+(!user.is_active?'true':'false')+'"'+(!user.email_confirmed&&!user.is_active?' disabled title="User must verify their email first"':'')+'>'+(user.is_active?'Deactivate':'Activate')+'</button><button class="button button-danger" type="button" data-user-delete="'+esc(user.id)+'">Remove</button>':'<span class="account-muted">You</span>')+'</div></div>'
     ).join("")+'</div>';
   }
 
@@ -1077,6 +1077,7 @@
     if(saveRole){
       if(!supabaseClient||currentRole!=="admin")return;
       const id=saveRole.getAttribute("data-user-role-save");
+      if(!id || id === (signedInUser && signedInUser.id)){window.alert("You cannot change your own role.");return;}
       const selector=Array.from(document.querySelectorAll("[data-user-role]")).find(el=>el.getAttribute("data-user-role")===id);
       if(!selector)return;
       saveRole.disabled=true;
