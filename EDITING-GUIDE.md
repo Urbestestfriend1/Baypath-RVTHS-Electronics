@@ -166,3 +166,12 @@ Upload images into `assets/images/` and point to them from the relevant data obj
 Commit the changes to `main`. GitHub Pages runs its deployment automatically. If the live site still shows an older layout, try a hard refresh with **Ctrl + Shift + R**.
 
 The website is public. Do not upload private student information or restricted class files. The sample electronics builds are low-voltage DC examples; confirm part ratings and follow the instructor's directions before powering a circuit.
+
+
+## Featured project of the week
+
+Edit `data/projects.js`. Projects marked `featured: true` rotate in the home-page banner each Monday. Leave only one project marked true for a fixed weekly spotlight, or mark multiple projects true to rotate among them. Set `featuredBy` to the contributor's approved display name. The current reference projects do not yet contain verified contributor names, so replace the `Contributor credit pending` placeholders before publishing a named credit.
+
+## Replacing website images
+
+All current website image assets live in `assets/images/` as PNG files. To replace an image without changing code, upload a new PNG using the same filename and dimensions/aspect ratio where practical. The image references are in `data/projects.js`, `data/pages.js`, `data/site-config.js`, and `index.html`. Keep transparent backgrounds for marks/icons where applicable.
