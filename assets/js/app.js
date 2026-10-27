@@ -1404,7 +1404,7 @@
       event.preventDefault();
       if(!supabaseClient){accountMessage="Supabase is not available.";accountMessageKind="error";render();return;}
       const form=event.target,button=form.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent="Sending…";}
-      const redirectTo=location.origin+location.pathname+"?auth=recovery";
+      const redirectTo=location.origin+location.pathname;
       const {error}=await supabaseClient.auth.resetPasswordForEmail(form.elements.email.value.trim(),{redirectTo});
       if(error){accountMessage=error.message||"Could not send the reset link.";accountMessageKind="error";}
       else{accountMessage="If an account exists for that address, a password reset email has been sent.";accountMessageKind="success";}
