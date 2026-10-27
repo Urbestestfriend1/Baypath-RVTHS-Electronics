@@ -272,8 +272,10 @@
     });
   }
 
-  function canEditInventory(){ return Boolean(signedInUser && currentProfile && currentProfile.is_active && (currentRole === "editor" || currentRole === "admin")); }
-  function canDeleteInventory(){ return Boolean(signedInUser && currentProfile && currentProfile.is_active && currentRole === "admin"); }
+  function isVerifiedAccount(){ return Boolean(signedInUser && signedInUser.email_confirmed_at); }
+  function isActiveAccount(){ return Boolean(isVerifiedAccount() && currentProfile && currentProfile.is_active); }
+  function canEditInventory(){ return Boolean(isActiveAccount() && (currentRole === "editor" || currentRole === "admin")); }
+  function canDeleteInventory(){ return Boolean(isActiveAccount() && currentRole === "admin"); }
   function dbToInventory(row){
     return {
       id: row.legacy_id || row.id, dbId: row.id, legacyId: row.legacy_id || "",
@@ -296,7 +298,7 @@
     databaseInventoryLoaded = true;
   }
   async function loadAdminUsers(){
-    if(!supabaseClient || !(currentProfile && currentProfile.is_active) || currentRole !== "admin"){ adminUsers = []; return; }
+    if(!supabaseClient || !isActiveAccount() || currentRole !== "admin"){ adminUsers = []; return; }
     adminUsersLoading = true; adminUsersError = "";
     if(pathNow() === "/account") render();
     const { data, error } = await supabaseClient.functions.invoke("admin-users", { body: { action: "list" } });
@@ -311,11 +313,11 @@
     if(signedInUser && supabaseClient){
       const { data, error } = await supabaseClient.from("profiles").select("id, display_name, role, is_active").eq("id", signedInUser.id).maybeSingle();
       if(error){ accountMessage = "Signed in, but the profile could not be loaded: " + error.message; accountMessageKind = "error"; }
-      else if(data){ currentProfile = data; currentRole = data.role; if(data.is_active){ accountMessage = ""; } else { accountMessage = "This account is not active yet. Ask the site administrator to invite or activate it."; accountMessageKind = "error"; } }
+      else if(data){ currentProfile = data; currentRole = data.role; if(!isVerifiedAccount()){ accountMessage = "Verify your email address before using this account."; accountMessageKind = "error"; } else if(data.is_active){ accountMessage = ""; } else { accountMessage = "This account is not active yet. Ask the site administrator to invite or activate it."; accountMessageKind = "error"; } }
       else { accountMessage = "Your account exists, but its profile is missing. Ask an administrator to repair it."; accountMessageKind = "error"; }
       await refreshDatabaseInventory();
       updateAccountLink();
-      if(currentRole === "admin" && currentProfile && currentProfile.is_active) await loadAdminUsers();
+      if(currentRole === "admin" && isActiveAccount()) await loadAdminUsers();
     } else {
       currentProfile = null; currentRole = null;
       updateAccountLink();
@@ -326,7 +328,7 @@
   function updateAccountLink(){
     const link = document.getElementById("account-link");
     if(!link) return;
-    link.textContent = signedInUser ? (currentProfile && currentProfile.is_active && currentRole ? "Account · " + currentRole[0].toUpperCase() + currentRole.slice(1) : "Account · Pending") : "Sign in";
+    link.textContent = signedInUser ? (isActiveAccount() && currentRole ? "Account · " + currentRole[0].toUpperCase() + currentRole.slice(1) : "Account · Pending") : "Sign in";
     link.setAttribute("aria-label", signedInUser ? "Account and permissions" : "Sign in to Baypath Electronics");
   }
   function initSupabase(){
@@ -451,7 +453,7 @@
         (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+
         '<form id="sign-in-form" class="auth-form"><label>Email address<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-accent" type="submit">Sign in</button><p class="account-muted">Accounts are created by the site administrator. If you need access, ask the administrator for an invitation.</p></form></div></div>';
     }
-    if(currentRole==="admin" && currentProfile && currentProfile.is_active) return renderAdminDashboard(path);
+    if(currentRole==="admin" && isActiveAccount()) return renderAdminDashboard(path);
     return '<div class="page-shell">'+breadcrumbs(path)+'<header class="page-intro"><div><p class="eyebrow">ACCOUNT / ACCESS CONTROL</p><h1>Account</h1><p>Manage your session and review your permission level.</p></div></header>' +
       '<section class="account-summary"><div class="account-avatar">'+esc((currentProfile&&currentProfile.display_name||signedInUser.email||"U").slice(0,1).toUpperCase())+'</div><div class="account-summary-copy"><h2>'+esc(currentProfile&&currentProfile.display_name||signedInUser.email)+'</h2><p>'+esc(signedInUser.email||"")+'</p><span class="account-role">'+esc(roleLabel)+'</span></div><button class="button button-outline" type="button" data-auth-signout>Sign out</button></section>' +
       (accountMessage?'<p class="account-'+esc(accountMessageKind)+'" role="status">'+esc(accountMessage)+'</p>':"")+
