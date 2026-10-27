@@ -424,7 +424,8 @@
         '<td><span class="stock-pill stock-'+stock.key+'">'+(stock.key==="in"?"✓":stock.key==="low"?"!":stock.key==="out"?"×":"?")+' '+esc(stock.label)+'</span></td>'+
         '<td class="inventory-notes-cell"><p>'+esc(item.description||"No description recorded.")+'</p>'+(item.notes?'<small>'+esc(item.notes)+'</small>':"")+
         (item.datasheet?'<a href="'+esc(item.datasheet)+'" target="_blank" rel="noopener">Datasheet / reference ↗</a>':"")+
-        (item.updatedAt?'<span class="inventory-updated">Updated '+esc(item.updatedAt)+'</span>':"")+'</td></tr>';
+        (item.updatedAt?'<span class="inventory-updated">Updated '+esc(item.updatedAt)+'</span>':"")+
+        (canEditInventory()?'<div class="inventory-row-actions"><button type="button" class="button button-outline" data-inventory-edit="'+esc(item.dbId||"")+'">Edit</button>'+(canDeleteInventory()?'<button type="button" class="button button-danger" data-inventory-delete="'+esc(item.dbId||"")+'">Delete</button>':"")+'</div>':"")+'</td></tr>';
     }).join("");
   }
   function inventoryExportCSV(rows){
@@ -464,12 +465,15 @@
       '<header class="inventory-page-heading"><div><p class="eyebrow">INVENTORY / MASTER CATALOG</p><h1>Inventory<span class="heading-period">.</span></h1>'+
       '<p>A searchable, structured catalog for electronic components, wiring, hand tools, test equipment, consumables, and reusable shop assets. Search by the part you know, filter by where it lives, and sort the list to review quantities or identify records that need attention. As the catalog grows, filters narrow the full dataset while pagination keeps each view manageable.</p></div>'+
       '<div class="inventory-heading-side"><span class="inventory-heading-icon">▦</span><strong>MASTER STOCK LIST</strong><small>Part → Location → Quantity → Notes</small><a href="#inventory-catalog">Browse the catalog ↓</a></div></header>'+
+      renderInventoryEditorPanel()+
+      (signedInUser ? '<aside class="inventory-auth-notice"><strong>Connected inventory database</strong><p>You are signed in. The table shows saved Supabase records, not the public demo rows.</p></aside>' : '<aside class="inventory-auth-notice"><strong>Sign in to access live stock records</strong><p>This public view uses demonstration records only. <a href="#/account">Sign in</a> to access the protected database; editors can add and update records.</p></aside>')+
+      (inventoryLoadError ? '<aside class="account-error" role="alert">Could not load live inventory: '+esc(inventoryLoadError)+'</aside>' : '')+
       (isExample?'<aside class="inventory-demo-notice"><span class="demo-notice-icon">!</span><div><strong>Demonstration data — not verified Baypath stock</strong><p>The rows below are examples that show how the catalog works. Quantities, manufacturers, and storage locations are fictional sample values. Replace or remove these records in <code>data/inventory.js</code> before using the table to locate real parts or make purchasing decisions.</p></div></aside>':"")+
       '<section class="inventory-summary-grid" aria-label="Inventory summary"><div class="inventory-summary-card"><span>Catalog records</span><strong>'+inventory.length.toLocaleString("en-US")+'</strong><small>'+(isExample?"Example records loaded":"Records in the catalog")+'</small></div>'+
       '<div class="inventory-summary-card"><span>Categories</span><strong>'+categories.length.toString().padStart(2,"0")+'</strong><small>Types of item listed</small></div>'+
       '<div class="inventory-summary-card"><span>Low stock</span><strong>'+(isExample?"—":low.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"At or below minimum quantity")+'</small></div>'+
       '<div class="inventory-summary-card"><span>Out of stock</span><strong>'+(isExample?"—":out.toLocaleString("en-US"))+'</strong><small>'+(isExample?"Demo count not real":"Quantity recorded as zero")+'</small></div></section>'+
-      '<section class="inventory-catalog" id="inventory-catalog"><div class="inventory-catalog-heading"><div><p class="section-overline">INVENTORY TABLE</p><h2>Find an item</h2><p>Use search or combine filters. Search checks part numbers, item names, manufacturers, categories, storage paths, descriptions, and notes.</p></div><div class="inventory-catalog-actions"><button type="button" class="button button-outline" data-inventory-reset>Reset filters</button><button type="button" class="button button-accent" data-inventory-export>Export CSV</button></div></div>'+
+      '<section class="inventory-catalog" id="inventory-catalog"><div class="inventory-catalog-heading"><div><p class="section-overline">INVENTORY TABLE</p><h2>Find an item</h2><p>Use search or combine filters. Search checks part numbers, item names, manufacturers, categories, storage paths, descriptions, and notes.</p></div><div class="inventory-catalog-actions">'+(canEditInventory()?'<button type="button" class="button button-accent" data-inventory-add>+ Add item</button>':"")+'<button type="button" class="button button-outline" data-inventory-reset>Reset filters</button><button type="button" class="button button-accent" data-inventory-export>Export CSV</button></div></div>'+
       '<section class="inventory-how-to" aria-labelledby="inventory-how-to-title"><div class="inventory-how-to-header"><h3 id="inventory-how-to-title">How to use the catalog</h3><p>Filters work together. For example, choose a category and a storage area to see only that type of item stored in that place.</p></div><div class="inventory-help-grid">'+
       '<div><strong>Search</strong><p>Type part of a name, part number, value, manufacturer, cabinet, shelf, bin, or note. Partial words work.</p></div>'+
       '<div><strong>Category = what it is</strong><p>Choose a type of item, such as Resistors, Capacitors, LEDs &amp; Displays, Integrated Circuits, or Wires &amp; Cables.</p></div>'+
@@ -481,7 +485,7 @@
       '<label><span>Stock status</span><select id="inventory-stock" aria-label="Filter by stock status"><option value="all"'+(inventoryState.stock==="all"?" selected":"")+'>All statuses</option><option value="in"'+(inventoryState.stock==="in"?" selected":"")+'>In stock</option><option value="low"'+(inventoryState.stock==="low"?" selected":"")+'>Low stock</option><option value="out"'+(inventoryState.stock==="out"?" selected":"")+'>Out of stock</option><option value="unknown"'+(inventoryState.stock==="unknown"?" selected":"")+'>Count needed</option></select></label></div>'+
       '<div class="inventory-results-strip"><span class="inventory-live-dot"></span><span id="inventory-live-summary" aria-live="polite">Loading catalog results</span><span class="inventory-strip-note">Counts are shown with their units and minimum restock levels.</span></div><div id="inventory-results" aria-live="polite"></div>'+
       '<div class="inventory-field-guide"><div><span class="field-guide-mark">01</span><div><strong>Part number</strong><p>Use a consistent internal ID, manufacturer SKU, or other unique identifier. Keep it stable when an item is moved to another shelf.</p></div></div><div><span class="field-guide-mark">02</span><div><strong>Storage location</strong><p>Record the area, cabinet, shelf or drawer, and bin. Make the location specific enough that someone unfamiliar with the list can find the item without guessing.</p></div></div><div><span class="field-guide-mark">03</span><div><strong>Quantity & minimum</strong><p>Record the counted amount and the level that should trigger a restock review. Use a consistent unit such as pcs, sets, reels, or units.</p></div></div></div></section>'+
-      '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>Keep counts trustworthy.</strong><p>This is a static catalog, so permanent changes are made in <code>data/inventory.js</code> and published with a GitHub commit. Search, filters, sorting, pagination, and CSV export work in the browser, but changing a displayed quantity does not write it back to GitHub. Periodic counts and a consistent part-number format keep the master list dependable.</p></div></aside></div>';
+      (signedInUser ? '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>Database-backed inventory.</strong><p>When signed in, inventory edits are saved to Supabase. Use a consistent part number and count physical stock before relying on quantities.</p></div></aside>' : '<aside class="inventory-maintenance-note"><span class="note-mark">i</span><div><strong>Keep counts trustworthy.</strong><p>The public catalog view uses demonstration rows only. Sign in for database-backed stock records and persistent editing.</p></div></aside>')+'</div>';
   }
 
   function renderProjectGallery(path) {
@@ -655,14 +659,15 @@
     const project = projectFor(path);
     renderTop(path);
     renderContext(path, project);
-    const output = path === "/" ? renderHome() : path === "/inventory" ? renderInventory(path) : project ? renderProjectDetail(project, path) : renderPage(path);
+    const output = path === "/" ? renderHome() : path === "/inventory" ? renderInventory(path) : path === "/account" ? renderAccountPage(path) : project ? renderProjectDetail(project, path) : renderPage(path);
     app.innerHTML = '<div class="route-view">' + output + '</div>';
     app.classList.remove("is-entering");
     void app.offsetWidth;
     app.classList.add("is-entering");
     if (path === "/inventory") updateInventoryResults();
+    updateAccountLink();
     const page = pages[path];
-    document.title = (project ? project.title : page ? page.title : path === "/" ? "Home" : "Electronics") + " — " + (cfg.brand || "Electronics");
+    document.title = (project ? project.title : path === "/account" ? "Account" : path === "/inventory" ? "Inventory" : page ? page.title : path === "/" ? "Home" : "Electronics") + " — " + (cfg.brand || "Electronics");
     setSidebarOpen(false);
   }
 
@@ -785,8 +790,117 @@
   document.addEventListener("keydown", event => {
     if (event.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { event.preventDefault(); search.focus(); }
   });
+
+  document.addEventListener("submit", async event => {
+    if (event.target.id === "sign-in-form") {
+      event.preventDefault();
+      if(!supabaseClient){accountMessage="Supabase is not available.";accountMessageKind="error";render();return;}
+      const form=event.target,button=form.querySelector('button[type="submit"]');
+      if(button){button.disabled=true;button.textContent="Signing in…";}
+      accountMessage="";
+      const {error}=await supabaseClient.auth.signInWithPassword({email:form.elements.email.value.trim(),password:form.elements.password.value});
+      if(error){accountMessage=error.message||"Sign-in failed.";accountMessageKind="error";if(button){button.disabled=false;button.textContent="Sign in";}render();}
+      else {accountMessage="Signed in. Loading account permissions…";accountMessageKind="info";render();}
+      return;
+    }
+    if (event.target.id === "inventory-edit-form") {
+      event.preventDefault();
+      if(!supabaseClient||!signedInUser||!canEditInventory())return;
+      const form=event.target,button=form.querySelector('button[type="submit"]'),msg=document.getElementById("inventory-editor-message");
+      if(button){button.disabled=true;button.textContent="Saving…";}
+      if(msg)msg.textContent="";
+      const value=name=>String(form.elements[name]?.value??"").trim();
+      const numberOrNull=name=>value(name)===""?null:Number(value(name));
+      const payload={
+        legacy_id:value("legacyId")||null,part_number:value("partNumber"),name:value("name"),manufacturer:value("manufacturer")||null,
+        category:value("category"),description:value("description")||null,quantity:numberOrNull("quantity"),unit:value("unit")||"pcs",
+        minimum_quantity:numberOrNull("minimumQuantity")??0,condition:value("condition")||null,supplier:value("supplier")||null,
+        location_area:value("locationArea")||null,location_cabinet:value("locationCabinet")||null,location_shelf:value("locationShelf")||null,
+        location_bin:value("locationBin")||null,datasheet:value("datasheet")||null,notes:value("notes")||null,updated_by:signedInUser.id
+      };
+      if(!payload.part_number||!payload.name||!payload.category){if(msg)msg.textContent="Part number, item name, and category are required.";if(button){button.disabled=false;button.textContent="Save inventory item";}return;}
+      const dbId=value("dbId");
+      const result=dbId
+        ? await supabaseClient.from("inventory_items").update(payload).eq("id",dbId).select("id").maybeSingle()
+        : await supabaseClient.from("inventory_items").insert({...payload,created_by:signedInUser.id,record_type:"verified"}).select("id").single();
+      if(result.error){
+        if(msg)msg.textContent=result.error.message||"Could not save this item.";
+        if(button){button.disabled=false;button.textContent=dbId?"Save changes":"Save inventory item";}
+        return;
+      }
+      await refreshDatabaseInventory();inventoryState.page=1;render();
+      const panel=document.getElementById("inventory-editor-panel");if(panel)panel.hidden=true;
+      return;
+    }
+    if (event.target.id === "admin-invite-form") {
+      event.preventDefault();
+      if(!supabaseClient||currentRole!=="admin")return;
+      const form=event.target,button=form.querySelector('button[type="submit"]'),msg=document.getElementById("admin-invite-message");
+      if(button){button.disabled=true;button.textContent="Sending invitation…";}
+      if(msg)msg.textContent="";
+      const {data,error}=await supabaseClient.functions.invoke("admin-users",{body:{
+        action:"invite",email:form.elements.email.value.trim(),display_name:form.elements.displayName.value.trim(),role:form.elements.role.value
+      }});
+      if(error||(data&&data.error)){
+        if(msg)msg.textContent=(data&&data.error)||error.message||"Could not send invitation.";
+        if(button){button.disabled=false;button.textContent="Send invitation";}
+      } else {
+        if(msg)msg.textContent="Invitation sent to "+(data.user&&data.user.email||form.elements.email.value.trim())+".";
+        form.reset();await loadAdminUsers();
+        if(button){button.disabled=false;button.textContent="Send invitation";}
+      }
+      return;
+    }
+  });
+  document.addEventListener("click", async event => {
+    const add=event.target.closest("[data-inventory-add]");
+    if(add){showInventoryEditor("");return;}
+    const edit=event.target.closest("[data-inventory-edit]");
+    if(edit){showInventoryEditor(edit.getAttribute("data-inventory-edit"));return;}
+    if(event.target.closest("[data-inventory-editor-cancel]")){
+      const panel=document.getElementById("inventory-editor-panel");if(panel)panel.hidden=true;return;
+    }
+    const del=event.target.closest("[data-inventory-delete]");
+    if(del){
+      if(!supabaseClient||!canDeleteInventory())return;
+      const dbId=del.getAttribute("data-inventory-delete"),item=inventory.find(row=>row.dbId===dbId);
+      if(!dbId||!window.confirm('Delete "'+(item?item.name:"this item")+'" from the inventory? This cannot be undone.'))return;
+      del.disabled=true;
+      const {error}=await supabaseClient.from("inventory_items").delete().eq("id",dbId);
+      if(error){window.alert("Delete failed: "+error.message);del.disabled=false;return;}
+      await refreshDatabaseInventory();inventoryState.page=1;render();return;
+    }
+    if(event.target.closest("[data-auth-signout]")){
+      if(supabaseClient){const {error}=await supabaseClient.auth.signOut();if(error){accountMessage=error.message;accountMessageKind="error";render();return;}}
+      accountMessage="Signed out.";accountMessageKind="info";location.hash="#/account";return;
+    }
+    if(event.target.closest("[data-admin-users-refresh]")){await loadAdminUsers();return;}
+    const saveRole=event.target.closest("[data-user-role-save]");
+    if(saveRole){
+      if(!supabaseClient||currentRole!=="admin")return;
+      const id=saveRole.getAttribute("data-user-role-save");
+      const selector=Array.from(document.querySelectorAll("[data-user-role]")).find(el=>el.getAttribute("data-user-role")===id);
+      if(!selector)return;
+      saveRole.disabled=true;
+      const {data,error}=await supabaseClient.functions.invoke("admin-users",{body:{action:"set_role",user_id:id,role:selector.value}});
+      if(error||(data&&data.error)){window.alert((data&&data.error)||(error&&error.message)||"Could not update role.");saveRole.disabled=false;return;}
+      accountMessage="User role updated.";accountMessageKind="info";await loadAdminUsers();render();return;
+    }
+    const deleteUser=event.target.closest("[data-user-delete]");
+    if(deleteUser){
+      if(!supabaseClient||currentRole!=="admin")return;
+      const id=deleteUser.getAttribute("data-user-delete"),user=adminUsers.find(row=>row.id===id);
+      if(!window.confirm("Remove "+(user?user.email:"this user")+"? Their sign-in account will be deleted."))return;
+      deleteUser.disabled=true;
+      const {data,error}=await supabaseClient.functions.invoke("admin-users",{body:{action:"delete_user",user_id:id}});
+      if(error||(data&&data.error)){window.alert((data&&data.error)||(error&&error.message)||"Could not remove user.");deleteUser.disabled=false;return;}
+      await loadAdminUsers();render();return;
+    }
+  });
+
   window.addEventListener("hashchange", () => {
     if (location.hash.startsWith("#/")) { render(); window.scrollTo(0, 0); results.hidden = true; }
   });
   render();
+  initSupabase();
 })();
