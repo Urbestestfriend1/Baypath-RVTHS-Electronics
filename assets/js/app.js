@@ -251,6 +251,7 @@
         '<h2 id="weekly-spotlight-title">The next spotlight is being prepared.</h2>' +
         '<p class="weekly-spotlight-description">This space is reserved for a real student creation or technical contribution, with creator credit, the story behind it, notable details, photos, and an optional video. No how-to steps—just the work and why it matters.</p>' +
         '<a class="text-link weekly-spotlight-link" href="#/spotlights">Explore creator spotlights <span>↗</span></a></div></section>';
+    const featured = projects.filter(project => project.featured && !project.template);
     const displayProjects = (featured.length ? featured : projects.filter(project => !project.template)).slice(0, 2);
     const featuredCards = displayProjects.length
       ? '<div class="featured-projects">' + displayProjects.map(projectCard).join("") + '</div>'
