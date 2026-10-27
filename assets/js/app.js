@@ -427,7 +427,7 @@
   function isActiveAdmin() { return Boolean(isActiveAccount() && currentRole === "admin"); }
   function rowsToText(items, fields) {
     return (Array.isArray(items) ? items : []).map(item =>
-      fields.map(field => String(item && item[field] != null ? item[field] : "").replace(/\|/g, "/").replace(/\r?\n/g, " ")).join(" | ")
+      fields.map(field => String(typeof item === "string" && fields.length === 1 ? item : item && item[field] != null ? item[field] : "").replace(/\|/g, "/").replace(/\r?\n/g, " ")).join(" | ")
     ).join("\n");
   }
   function textToLines(value) {
@@ -1179,7 +1179,184 @@
     if (event.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { event.preventDefault(); search.focus(); }
   });
 
+
+  async function submitSiteContentForm(event) {
+    event.preventDefault();
+    if (!supabaseClient || !isActiveAdmin()) { contentEditorMessage = "Only active administrators can edit site content."; render(); return; }
+    const form = event.target;
+    const button = form.querySelector('button[type="submit"]');
+    if (button) { button.disabled = true; button.textContent = "Saving content…"; }
+    contentEditorMessage = "";
+    const value = name => String(form.elements[name] && form.elements[name].value != null ? form.elements[name].value : "").trim();
+    const slug = value("slug").toLowerCase();
+    const title = value("title");
+    const type = value("contentType");
+    if (!title || !slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      contentEditorMessage = "Enter a title and a URL slug using lowercase letters, numbers, and hyphens.";
+      render(); return;
+    }
+    try {
+      let featuredImage = value("featuredImage");
+      let schematicImage = value("schematicImage");
+      let videoUrl = value("videoUrl");
+      let videoId = videoIdFromValue(videoUrl);
+      if (videoId) videoUrl = "";
+      const featuredFile = form.elements.featuredFile && form.elements.featuredFile.files[0];
+      const schematicFile = form.elements.schematicFile && form.elements.schematicFile.files[0];
+      const videoFile = form.elements.videoFile && form.elements.videoFile.files[0];
+      if (featuredFile) featuredImage = await uploadSiteMedia(featuredFile, type, slug, "cover");
+      if (schematicFile) schematicImage = await uploadSiteMedia(schematicFile, type, slug, "schematic");
+      if (videoFile) { videoUrl = await uploadSiteMedia(videoFile, type, slug, "video"); videoId = ""; }
+      let gallery = textToRows(value("gallery"), ["image", "alt", "caption"]);
+      const galleryFiles = form.elements.galleryFiles ? Array.from(form.elements.galleryFiles.files || []) : [];
+      if (galleryFiles.length > 8) throw new Error("Upload no more than 8 gallery images at once.");
+      for (const file of galleryFiles) {
+        const uploaded = await uploadSiteMedia(file, type, slug, "gallery");
+        gallery.push({ image: uploaded, alt: file.name, caption: "" });
+      }
+      const summary = value("summary");
+      const description = value("description");
+      const category = value("category");
+      const gradeLevel = value("gradeLevel");
+      const status = value("status");
+      const common = {
+        summary, description, category, status, featuredImage, featuredImageAlt: value("featuredImageAlt"),
+        schematicImage, schematicAlt: value("schematicAlt"), videoId, videoUrl, gallery,
+        tags: textToLines(value("tags")), notes: value("notes")
+      };
+      let content;
+      if (type === "spotlight") {
+        content = {
+          ...common,
+          creatorName: value("creatorName"),
+          classYear: gradeLevel,
+          dateLabel: status,
+          story: value("story"),
+          contribution: value("contribution"),
+          highlights: textToLines(value("highlights"))
+        };
+      } else if (type === "project") {
+        const principleTitle = value("principleTitle");
+        const principleText = value("principleText");
+        const principleFormula = value("principleFormula");
+        content = {
+          ...common,
+          grade: gradeLevel || "Unassigned",
+          gradeLevel,
+          classYear: gradeLevel,
+          featured: form.elements.featured.checked,
+          facts: textToRows(value("facts"), ["label", "value"]),
+          principle: principleTitle || principleText || principleFormula ? { title: principleTitle, text: principleText, formula: principleFormula } : null,
+          objectives: textToLines(value("objectives")),
+          designProcess: textToRows(value("designProcess"), ["title", "description"]),
+          materials: textToRows(value("materials"), ["name", "quantity", "notes"]),
+          tools: textToLines(value("tools")),
+          steps: textToRows(value("steps"), ["title", "description", "why", "check"]),
+          verification: textToRows(value("verification"), ["title", "description"]),
+          troubleshooting: textToRows(value("troubleshooting"), ["problem", "cause", "fix"]),
+          files: textToRows(value("files"), ["label", "href", "description"])
+        };
+      } else if (type === "schematic") {
+        const sections = [];
+        if (description || schematicImage) sections.push({ heading: "Schematic", text: description || summary, image: schematicImage || featuredImage, imageAlt: value("schematicAlt") || value("featuredImageAlt") || title });
+        if (value("story")) sections.push({ heading: "Design notes", text: value("story") });
+        content = {
+          ...common,
+          eyebrow: category || "Shared circuit reference",
+          sections,
+          relatedProjectSlug: value("relatedProjectSlug"),
+          cards: value("relatedProjectSlug") ? [{
+            title: "Related project guide",
+            tag: "BUILD GUIDE",
+            description: "Open the companion guide for parts, assembly steps, and verification.",
+            image: featuredImage || schematicImage,
+            imageAlt: value("featuredImageAlt") || title,
+            path: "/projects/" + value("relatedProjectSlug"),
+            linkLabel: "Open project guide"
+          }] : []
+        };
+        content.featuredImage = featuredImage || schematicImage;
+      } else {
+        throw new Error("Choose a supported content type.");
+      }
+      const payload = {
+        content_type: type,
+        slug,
+        title,
+        content,
+        published: Boolean(form.elements.published.checked),
+        featured: type === "spotlight" && Boolean(form.elements.featured.checked),
+        updated_by: signedInUser.id,
+        updated_at: new Date().toISOString()
+      };
+      const id = value("contentId");
+      let result;
+      if (id) {
+        result = await supabaseClient.from("site_content").update(payload).eq("id", id).select("*").single();
+      } else {
+        result = await supabaseClient.from("site_content").insert({ ...payload, created_by: signedInUser.id }).select("*").single();
+      }
+      if (result.error) throw result.error;
+      contentEditorOpen = false;
+      contentEditorRecord = null;
+      contentEditorType = type;
+      accountMessage = (payload.published ? "Content published." : "Draft saved.") + " Media and page content are stored centrally.";
+      accountMessageKind = "success";
+      await loadSiteContent(false);
+      render();
+    } catch (error) {
+      contentEditorMessage = error && error.message ? error.message : "Could not save site content.";
+      render();
+    }
+  }
+
+  async function seedExistingReferenceContent() {
+    if (!isActiveAdmin() || !supabaseClient) return;
+    const have = new Set(siteContent.map(row => row.content_type + "|" + row.slug));
+    const rows = [];
+    for (const project of baseProjects) {
+      if (!project.slug || have.has("project|" + project.slug)) continue;
+      rows.push({
+        content_type: "project", slug: project.slug, title: project.title,
+        content: project, published: true, featured: false,
+        created_by: signedInUser.id, updated_by: signedInUser.id
+      });
+    }
+    const schematicDefinitions = [
+      ["555-timer-led-flasher", "/schematics/555-timer-led-flasher", "assets/images/schematic-555-timer.png"],
+      ["led-current-limiter", "/schematics/led-current-limiter", "assets/images/schematic-led-current.png"],
+      ["npn-transistor-switch", "/schematics/npn-transistor-switch", "assets/images/schematic-transistor-switch.png"]
+    ];
+    for (const [slug, path, image] of schematicDefinitions) {
+      if (have.has("schematic|" + slug)) continue;
+      const page = basePages[path];
+      if (!page) continue;
+      const content = { ...page, slug, title: page.title || slug, featuredImage: image, schematicImage: image };
+      rows.push({
+        content_type: "schematic", slug, title: content.title,
+        content, published: true, featured: false,
+        created_by: signedInUser.id, updated_by: signedInUser.id
+      });
+    }
+    if (!rows.length) {
+      accountMessage = "The current reference records have already been imported.";
+      accountMessageKind = "info";
+      return;
+    }
+    const { error } = await supabaseClient.from("site_content").insert(rows);
+    if (error) {
+      accountMessage = error.message || "Could not import current references.";
+      accountMessageKind = "error";
+      return;
+    }
+    accountMessage = "Imported " + rows.length + " reference records. You can now edit and publish them here.";
+    accountMessageKind = "success";
+    await loadSiteContent(false);
+    render();
+  }
+
   document.addEventListener("submit", async event => {
+    if (event.target.id === "site-content-form") { await submitSiteContentForm(event); return; }
     if(event.target.id === "finish-password-form"){
       event.preventDefault();
       if(!supabaseClient||!signedInUser||!authFlow){accountMessage="The secure setup session is missing. Reopen the invitation or request a fresh reset link.";accountMessageKind="error";render();return;}
