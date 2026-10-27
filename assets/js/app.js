@@ -405,8 +405,8 @@
   }
 
   function renderAdminDashboard(path){
-    const activeUsers=adminUsers.filter(user=>user.is_active).length;
-    const activeEditors=adminUsers.filter(user=>user.is_active && (user.role==="editor"||user.role==="admin")).length;
+    const activeUsers=adminUsers.filter(user=>user.is_active && user.email_confirmed).length;
+    const activeEditors=adminUsers.filter(user=>user.is_active && user.email_confirmed && (user.role==="editor"||user.role==="admin")).length;
     const displayName=currentProfile&&currentProfile.display_name||signedInUser.email||"Administrator";
     return '<div class="page-shell admin-dashboard">'+breadcrumbs(path)+
       '<header class="admin-console-hero"><div class="admin-console-hero-copy">'+
