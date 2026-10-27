@@ -1,0 +1,63 @@
+name: Convert site image assets to PNG
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/images/mark.png'
+permissions:
+  contents: write
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install conversion tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2
+          python -m pip install --upgrade pip
+          python -m pip install cairosvg pillow
+      - name: Convert assets and update references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import cairosvg
+          from PIL import Image
+
+          image_dir = Path("assets/images")
+          for source in sorted(image_dir.glob("*.svg")):
+              target = source.with_suffix(".png")
+              if source.name == "mark.svg" and (image_dir / "mark.png").exists():
+                  source.unlink()
+                  continue
+              cairosvg.svg2png(url=str(source), write_to=str(target), scale=2.0)
+              with Image.open(target) as image:
+                  image.save(target, format="PNG", optimize=True)
+              source.unlink()
+
+          for extension in (".html", ".js", ".css"):
+              for path in Path(".").rglob(f"*{extension}"):
+                  if ".git" in path.parts:
+                      continue
+                  original = path.read_text(encoding="utf-8")
+                  updated = original.replace(".svg", ".png")
+                  if updated != original:
+                      path.write_text(updated, encoding="utf-8")
+
+          # This is a one-time migration workflow; remove it in its own commit.
+          Path(".github/workflows/convert-assets-once.yml").unlink(missing_ok=True)
+          PY
+      - name: Commit converted PNG assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A assets/images index.html assets/css/styles.css assets/js/app.js data .github/workflows/convert-assets-once.yml
+          if git diff --cached --quiet; then
+            echo "No converted assets to commit."
+            exit 0
+          fi
+          git commit -m "Convert site images to PNG"
+          git push
